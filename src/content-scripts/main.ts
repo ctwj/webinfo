@@ -3,6 +3,8 @@ import ElementPlus from "element-plus";
 import Popup from "./Popup.vue";
 import "element-plus/lib/theme-chalk/index.css";
 
+import { ComponentManager } from "../components/manager";
+
 const MOUNT_EL_ID = "attonex_clipper";
 
 let mountEl = document.getElementById(MOUNT_EL_ID);
@@ -19,3 +21,7 @@ chrome.runtime.onMessage.addListener((message) => {
         (vm as any).visible = !(vm as any).visible;
     }
 });
+
+
+const manager = new ComponentManager();
+manager.runContentScript();
