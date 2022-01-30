@@ -12,6 +12,7 @@
 <script lang="ts">
 
 import { defineComponent } from "vue";
+
 import PopupPanel from "@/content-scripts/PopupPanel.vue";
 
 export default defineComponent({

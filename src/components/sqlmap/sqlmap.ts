@@ -1,9 +1,9 @@
 import { BaseComponent } from "@/components/component";
 
 import Task from "@/utils/task";
-import SqlmapSDK from "@/utils/sqlmap_sdk";
+import SqlmapSDK from "./sqlmap_sdk";
 
-import { Command, MSG } from './const';
+import { Command, CommandReply, MSG } from './const';
 
 
 interface SearchResultMessage {
@@ -120,9 +120,11 @@ export class SqlmapComponent extends BaseComponent {
                 if (cmdMsg.command === MSG.TASK_LIST) {
                     
                     this.sdk.getAllTaskList().then(res => {
-                        port.postMessage({ command: MSG.TASK_LIST_REPLY, sucess: true, data: res });
+                        const replyMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: true, data: res }
+                        port.postMessage(replyMsg);
                     }).catch (err => {
-                        port.postMessage({ command: MSG.TASK_LIST_REPLY, sucess: false, data: err });
+                        const errMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: false, data: err }
+                        port.postMessage(errMsg);
                     })
 
                     

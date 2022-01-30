@@ -14,3 +14,6 @@ npm run build
 
 # last
 导入crx文件夹到 chrome://extension
+
+# icon
+https://icons.getbootstrap.com/

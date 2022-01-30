@@ -190,7 +190,6 @@ export default class SqlmapSDK extends Singleton {
             if (!res.success) {
                 throw Error(`get all task list fail`);
             }
-            console.log(`[i]New Task was create: %c${res.taskid}`, 'color: green');
             return res.tasks;
         }).catch(err => {
             console.error(`[e]start sacn fail: %c${err}`, 'color: green');

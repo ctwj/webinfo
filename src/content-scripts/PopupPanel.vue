@@ -1,8 +1,8 @@
 <template>
     <div class="panel-container">
-      <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane label="User" name="first">
-          <sqlmap-panel />
+      <el-tabs class="panel-tabs" v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane class="panel-item" label="User" name="first">
+            <sqlmap-panel />
         </el-tab-pane>
         <el-tab-pane label="Config" name="second">Config</el-tab-pane>
       </el-tabs>
@@ -37,5 +37,12 @@ export default  defineComponent({
 <style scoped>
 .panel-container {
     width: 760px;
+    height: calc(100vh - 109px);
+    margin: 0 20px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+.panel-container .panel-tabs {
+    height: 100%;
 }
 </style>
