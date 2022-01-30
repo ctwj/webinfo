@@ -33,17 +33,33 @@ export class ComponentManager {
             return;
         }
         this.componentList.push(component);
-        console.log(`register componet %c${component.name}`, 'color: green');
-        console.log('%ccomponent.desc', 'color: yellow');
+        console.log(`register componet %c${component.name}: %c${component.desc}`, 'color: green', 'color: yellow');
     }
 
     /**
      * 运行 content-script 中内容
      */
     public runContentScript() {
-        this.componentList.forEach(compoent => {
-            compoent.content();
+        this.componentList.forEach(async component => {
+            if (await component.isEnable()) {
+                component.content();
+            }
+        });
+        console.log(`[i]content script register finished!`);
+    }
+
+    /**
+     * 运行 background
+     */
+    public runBackground() {
+        this.componentList.forEach(async component => {
+            const enable = await component.isEnable();
+            if (await component.isEnable()) {
+                component.background();
+            }
+            
         })
+        console.log(`[i]backgournd register finished!`);
     }
 
 }

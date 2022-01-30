@@ -9,10 +9,16 @@
     },
     "dependencies": {
         "@types/chrome": "^0.0.177",
+        "axios": "^0.25.0",
         "element-plus": "^1.0.2-beta.40",
+        "qs": "^6.10.3",
+        "superagent": "^7.1.1",
         "vue": "^3.0.5"
     },
     "devDependencies": {
+        "@types/node": "^17.0.13",
+        "@types/qs": "^6.9.7",
+        "@types/superagent": "^4.1.15",
         "@vitejs/plugin-vue": "^1.2.1",
         "@vue/compiler-sfc": "^3.0.5",
         "rollup-plugin-probe": "0.0.3",

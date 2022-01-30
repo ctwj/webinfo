@@ -32,7 +32,19 @@ export class BaseComponent implements ExtensionComponent {
         return await this.getSwitch();
     }
 
+    /**
+     * content script
+     * 注入到页面中的代码
+     */
     public content(): void {
         
+    }
+
+    /**
+     * background
+     * 运行在 background 的代码
+     */
+    public background(): void {
+
     }
 }
