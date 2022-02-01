@@ -22,13 +22,16 @@
         <el-table 
             :height="'inherit'" 
             :data="tableData.list" 
+            :row-class-name="tableRowClassName"
             class="table" 
             style="width: 100%"
             @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="55" />
+            <el-table-column type="selection"  width="55"/>
             <el-table-column prop="hostname" label="Hostname">
                 <template #default="scope">
-                    {{ scope.row.hostname ?? '获取中' }}
+                    <span :title="scope.row.url">
+                        {{ scope.row.hostname ?? '获取中' }}
+                    </span>
                 </template>
             </el-table-column>
             <el-table-column prop="status" label="Stauts" width="100">
@@ -44,14 +47,22 @@
                         @click.stop="() => handleStart(scope.row.taskId)" />
                 </template>
             </el-table-column>
-            <el-table-column prop="inject" label="inject" width="120">
+            <el-table-column prop="inject" label="Bug" width="80">
                 <template #default="scope">
-                    {{ scope.row.inject ?? '' }}
+                    {{ scope.row.inject ? '是' : '' }}
                 </template> 
             </el-table-column>
-            <el-table-column prop="opr" label="Operate" width="160">
+            <el-table-column prop="opr" label="Operate" width="200">
                 <template #default="scope">
                     <el-button
+                        v-if="scope.row.inject"
+                        size="small"
+                        @click="handleDetail(scope.$index, scope.row)"
+                        >Detail</el-button
+                    >
+
+                    <el-button
+                        v-if="!scope.row.inject"
                         size="small"
                         @click="handleLog(scope.$index, scope.row)"
                         >Log</el-button
@@ -70,6 +81,18 @@
                 <!-- <el-pagination layout="prev, pager, next" :total="50"></el-pagination> -->
             </el-col>
         </el-row>
+        <el-dialog
+            v-model="logVisable"
+            title="Log"
+            width="30%"
+        >
+            <span>This is a message</span>
+            <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="logVisable = false">Close</el-button>
+            </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -96,19 +119,14 @@ export default  defineComponent({
         };
         const search = ref('');
         const loading = ref(false);
+        const logVisable = ref(false);
+        const detailVisable = ref(false);
         const tableData = reactive({list: [] as TableRecord[]});
         const multipleSelection = ref<TableRecord[]>([])
 
         // 处理 TASK_LIST_REPLY 返回数据
-        const taskListReplyHandler = (data: {[key:string]: string}) => {
-            let result = [];
-            for (let key in data) {
-                result.push({
-                    taskId: key,
-                    status: data[key] as TASK_STATUS,
-                })
-            }
-            tableData.list = result;
+        const taskListReplyHandler = (data: TableRecord[]) => {
+            tableData.list = data;
             loading.value = false;
         };
 
@@ -159,6 +177,12 @@ export default  defineComponent({
             console.log(record);
         };
 
+        // 详情
+        const handleDetail = (index:number, record:TableRecord) => {
+            console.log(`[i]Log index:${index} item!`);
+            console.log(record);
+        };
+
         // 获取状态文案
         const getStatusText = (status: TASK_STATUS) => {
             const map:Record<TASK_STATUS, string> = {
@@ -177,18 +201,24 @@ export default  defineComponent({
             }
             return map[status];
         };
+
+        const tableRowClassName = ({ row, rowIndex, }: { row: TableRecord, rowIndex: number}) => {
+            return row.inject ? 'success-row' : '';
+        }
         
         return {
             STATUS,
-            tableData, loading, search,
-            handleSelectionChange, handleDelete, handleLog, handleStart,
+            tableData, search,
+            loading, detailVisable, logVisable, 
+            handleSelectionChange, handleDelete, handleLog, handleStart, handleDetail,
             getStatusText, getTagTypeByStatus,
+            tableRowClassName,
         }
     }
 });
 </script>
 
-<style scoped>
+<style>
 .sqlmap-container {
     height: calc(100vh - 164px);
     display: flex;
@@ -200,8 +230,11 @@ export default  defineComponent({
     flex-shrink: 0;
 } */
 
-.table {
+.sqlmap-container  .table {
     flex-grow: 1;
     flex-shrink: 1;
+}
+.sqlmap-container  .success-row {
+    background-color: #f0f9eb;
 }
 </style>

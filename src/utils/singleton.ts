@@ -1,18 +1,15 @@
-// 单例class
+/**
+ * 单例
+ */
 export default class Singleton {
-    static instance: Singleton;
-
+    private static _instance:any;
     constructor() {
-        if(!Singleton.instance) {
-            Singleton.instance = this
+        if (!Singleton._instance) {
+            Singleton._instance = this;
         }
-        return Singleton.instance
+        return Singleton._instance;
     }
-    
     static getInstance() {
-        if (!this.instance) {
-            return this.instance = new Singleton()
-        }
-        return this.instance
+        return this._instance;
     }
 }

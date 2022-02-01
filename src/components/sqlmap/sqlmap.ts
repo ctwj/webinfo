@@ -2,8 +2,10 @@ import { BaseComponent } from "@/components/component";
 
 import Task from "@/utils/task";
 import SqlmapSDK from "./sqlmap_sdk";
+import SqlmapCache from "./cache";
 
-import { Command, CommandReply, MSG } from './const';
+import { Command, CommandReply, MSG, TableRecord, TASK_STATUS } from './const';
+import { Table } from "element-plus/lib/el-table/src/table.type";
 
 
 interface SearchResultMessage {
@@ -94,6 +96,21 @@ export class SqlmapComponent extends BaseComponent {
     }
 
     /**
+     * 默认数据
+     */
+    private createTableRecord (taskId:string, url: string) {
+        const uri = new URL(url);
+        return {
+            taskId,
+            url,
+            hostname: uri.hostname,
+            status: TASK_STATUS.NOT_RUNNING,
+            inject: false,
+            data: {}
+        }
+    }
+
+    /**
      * 后台运行
      */
     public background() {
@@ -119,18 +136,59 @@ export class SqlmapComponent extends BaseComponent {
                 // 获取任务列表
                 if (cmdMsg.command === MSG.TASK_LIST) {
                     
-                    this.sdk.getAllTaskList().then(res => {
-                        const replyMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: true, data: res }
+                    const cache = new SqlmapCache();
+                    cache.print();
+
+                    this.sdk.getAllTaskList().then( async res => {
+
+                        console.log('res', res);
+
+                        // res => 从缓存中获取数据
+                        let result:TableRecord[] = [];
+                        for (let key in res) {
+                            const taskId = key;
+
+                            if (cache.isExists(key)) {
+                                result.push(cache.get(key) as TableRecord);
+                            } else {
+                                const options = await this.sdk.getTargetOptions(taskId);
+                                if (!options.url) {
+                                    continue;
+                                }
+                                const target = this.createTableRecord(taskId, options.url);
+                                target.status = res[key];
+                                if (target.status === TASK_STATUS.FINISH) {
+                                    const resultData = await this.sdk.getReuslt(taskId);
+                                    if (target.status === TASK_STATUS.FINISH) {
+                                        target.inject = !!resultData.length;
+                                    }
+                                    console.log(`${taskId} getReuslt`, resultData);
+                                }
+                                result.push(target)
+
+                                // 保存缓存
+                                new SqlmapCache().set(taskId, target);
+                            }
+                        }
+                        const replyMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: true, data: result }
                         port.postMessage(replyMsg);
                     }).catch (err => {
+                        console.log('get all taskk list error:', err);
                         const errMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: false, data: err }
                         port.postMessage(errMsg);
                     })
-
-                    
                 }
             })
         })
+    }
+
+    /**
+     * 添加任务后， 缓存任务
+     * @param taskId 任务ID
+     * @param url 任务url
+     */
+    private scanUrlCallback(taskId:string, url: string) {
+        new SqlmapCache().set(taskId, this.createTableRecord(taskId, url));
     }
 
     /**
@@ -140,7 +198,7 @@ export class SqlmapComponent extends BaseComponent {
      */
     public taskHandler(task: Target, next: () => void, component: BaseComponent) {
         console.log('[i]taskHandler: consumer task ', task.url);
-        (component as SqlmapComponent).sdk.scanUrl(task.url);
+        (component as SqlmapComponent).sdk.scanUrl(task.url, this.scanUrlCallback);
         next();
     }
 
