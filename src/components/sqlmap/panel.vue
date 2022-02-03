@@ -1,5 +1,8 @@
 <template>
     <div v-loading="loading" class="sqlmap-container">
+        <el-alert v-if="errorInfo.error" :title="errorInfo.msg" type="error">
+            请确定配置的 sqlmapapi 地址是否有效， 点击<a :href="optionsUrl" target="_blank">修改配置</a>
+        </el-alert>
         <el-row :gutter="20" :justify="'space-between'" :align="'middle'" class="header">
             <el-col :span="12">
                 <el-input v-model="search" class="w-50 m-2" placeholder="Type something">
@@ -101,6 +104,7 @@ import { ref, defineComponent, reactive, onMounted } from 'vue'
 import { MSG, TASK_STATUS, CommandReply, PORT_NAME, TableRecord } from './const';
 
 import { BIconSearch, BIconDashCircleFill, BIconCaretRightSquare } from 'bootstrap-icons-vue';
+import { ErrorCode, getErrorByCode } from '../type';
 
 
 
@@ -112,11 +116,17 @@ export default  defineComponent({
     setup: () => {
 
         let port;
+        const optionsUrl = chrome.runtime.getURL('options/index.html');
         const STATUS = {
             FINISH: TASK_STATUS.FINISH,
             RUNNING: TASK_STATUS.RUNNING,
             NOT_RUNNING: TASK_STATUS.NOT_RUNNING,
         };
+        const errorInfo=reactive({
+            error: false,
+            code: '',
+            msg: '',
+        });
         const search = ref('');
         const loading = ref(false);
         const logVisable = ref(false);
@@ -133,6 +143,12 @@ export default  defineComponent({
         // background 通信
         const msgHandler = (msg:CommandReply) => {
             if (!msg.success) {
+                loading.value = false;
+                // 显示错误
+                errorInfo.error = true;
+                errorInfo.code = msg.errorCode ?? '';
+                errorInfo.msg = getErrorByCode(msg.errorCode as ErrorCode);
+                console.log(errorInfo);
                 return;
             }
 
@@ -208,7 +224,7 @@ export default  defineComponent({
         
         return {
             STATUS,
-            tableData, search,
+            tableData, search, errorInfo, optionsUrl,
             loading, detailVisable, logVisable, 
             handleSelectionChange, handleDelete, handleLog, handleStart, handleDetail,
             getStatusText, getTagTypeByStatus,

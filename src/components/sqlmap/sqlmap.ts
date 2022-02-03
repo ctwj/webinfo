@@ -2,10 +2,12 @@ import { BaseComponent } from "@/components/component";
 
 import Task from "@/utils/task";
 import SqlmapSDK from "./sqlmap_sdk";
+import { ComponnetConfig } from "../config";
 import SqlmapCache from "./cache";
 
 import { Command, CommandReply, MSG, TableRecord, TASK_STATUS } from './const';
 import { Table } from "element-plus/lib/el-table/src/table.type";
+import { ConfigType } from "@/components/type";
 
 
 interface SearchResultMessage {
@@ -19,23 +21,50 @@ interface Target {
 
 export class SqlmapComponent extends BaseComponent {
 
+    // component public
     public name = "sqlmap";
     public desc = "获取google的搜索结果， 发送到sqlmapapi接口中";
+    public config = new ComponnetConfig(
+        this.name,
+        [{
+            type: ConfigType.INPUT,
+            name: "sqlmapapi",
+            title: "SqlmapApi Address",
+            description: "sqlmap api 地址, 配置地址后，插件能够自动通过sqlmapapi检测sql注入漏洞",
+            default: '',
+            value: '',
+        },
+        // {
+        //     type: ConfigType.SELECT,
+        //     name: "sqlmap-select",
+        //     title: "SqlmapApi select",
+        //     description: "sqlmap api 地过sqlmapapi检测sql注入漏洞",
+        //     options: [
+        //         {label: 'Select One Items', value: 'one'}, {label: 'Select Two Items', value: 'two'}
+        //     ],
+        //     default: 'two',
+        //     value: '',
+        // }
+        ]
+    );
+
+    // component special
     public task = new Task<Target>(this.taskHandler, this);
-    public sdk = new SqlmapSDK();
+    public sqlmapapi = '';
+    public sdk:SqlmapSDK | null = null;
 
     /**
      * 
      */
     constructor () {
         super();
+        
+        this.initSDK();
     }
 
-    /**
-     * 
-     */
-    public init () {
-
+    private async initSDK () {
+        this.sqlmapapi = await this.config.get('sqlmapapi');
+        this.sdk = new SqlmapSDK(this.sqlmapapi);
     }
 
     /**
@@ -139,26 +168,31 @@ export class SqlmapComponent extends BaseComponent {
                     const cache = new SqlmapCache();
                     cache.print();
 
-                    this.sdk.getAllTaskList().then( async res => {
+                    this.sdk?.getAllTaskList().then( async res => {
 
-                        console.log('res', res);
+                        // getAllTaskList 存在异常场景
+                        if (res.success === false) {
+                            const replyMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: false, errorCode: res?.code }
+                            port.postMessage(replyMsg);
+                            return;
+                        }
 
                         // res => 从缓存中获取数据
                         let result:TableRecord[] = [];
-                        for (let key in res) {
+                        for (let key in res.data) {
                             const taskId = key;
 
                             if (cache.isExists(key)) {
                                 result.push(cache.get(key) as TableRecord);
                             } else {
-                                const options = await this.sdk.getTargetOptions(taskId);
+                                const options = await this.sdk?.getTargetOptions(taskId);
                                 if (!options.url) {
                                     continue;
                                 }
                                 const target = this.createTableRecord(taskId, options.url);
-                                target.status = res[key];
+                                target.status = res.data[key];
                                 if (target.status === TASK_STATUS.FINISH) {
-                                    const resultData = await this.sdk.getReuslt(taskId);
+                                    const resultData = await this.sdk?.getReuslt(taskId);
                                     if (target.status === TASK_STATUS.FINISH) {
                                         target.inject = !!resultData.length;
                                     }
@@ -172,7 +206,7 @@ export class SqlmapComponent extends BaseComponent {
                         }
                         const replyMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: true, data: result }
                         port.postMessage(replyMsg);
-                    }).catch (err => {
+                    }).catch ((err: any) => {
                         console.log('get all taskk list error:', err);
                         const errMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: false, data: err }
                         port.postMessage(errMsg);
@@ -198,7 +232,7 @@ export class SqlmapComponent extends BaseComponent {
      */
     public taskHandler(task: Target, next: () => void, component: BaseComponent) {
         console.log('[i]taskHandler: consumer task ', task.url);
-        (component as SqlmapComponent).sdk.scanUrl(task.url, this.scanUrlCallback);
+        (component as SqlmapComponent).sdk?.scanUrl(task.url, this.scanUrlCallback);
         next();
     }
 

@@ -1,10 +1,13 @@
-import { ExtensionComponent } from './type';
+import { ComponnetConfig } from './config';
+import { ConfigType, ExtensionComponent } from './type';
 
 export class BaseComponent implements ExtensionComponent {
     name = 'base';
     desc = 'component';
     
     default_switch = true;
+
+    public config = new ComponnetConfig(this.name,[]);
 
     // 开关key
     public getSwitchKey () {
@@ -46,5 +49,10 @@ export class BaseComponent implements ExtensionComponent {
      */
     public background(): void {
 
+    }
+
+    
+    public getConfig():ComponnetConfig {
+        return this.config;
     }
 }

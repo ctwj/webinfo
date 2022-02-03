@@ -37,6 +37,13 @@ export class ComponentManager {
     }
 
     /**
+     * 返回所有组件
+     */
+    public getComponents() {
+        return this.componentList;
+    }
+
+    /**
      * 运行 content-script 中内容
      */
     public runContentScript() {

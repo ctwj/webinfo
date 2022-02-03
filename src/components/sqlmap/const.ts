@@ -10,7 +10,8 @@ export interface Command {
 export interface CommandReply {
     command: MSG;
     success: boolean;
-    data: any;
+    data?: any;
+    errorCode?: string;
 }
 
 // 消息名字

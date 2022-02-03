@@ -6,19 +6,20 @@
 
 import { Request } from '@/utils/request';
 import Singleton from '@/utils/singleton';
+import { ApiResult, ErrorCode } from '../type';
 
 interface SqlmapTestParmater {
     url: string;   
 }
 
 export default class SqlmapSDK extends Singleton {
-    private server = 'http://192.168.3.127:8775';
+    private server = '';
+    // private server = 'http://192.168.3.127:8775';
     private token = '478b1e9136bc32d01dcfcd2f44de87ee';
 
-    constructor (api:string = '', token:string = '') {
-        // this.token = token;
-        // this.api = api;
+    constructor (api:string = '') {
         super();
+        this.server = api;
     }
 
     /**
@@ -28,6 +29,7 @@ export default class SqlmapSDK extends Singleton {
      */
     public scanUrl(url:string, cb:((taskId:string, url: string)=>void) = ()=>{}):Promise<boolean> {
         let id:string;
+
         return this.createNewTask()
         .then(taskId => {
             id = taskId;
@@ -412,15 +414,24 @@ export default class SqlmapSDK extends Singleton {
         "tasks_num": 1
     }
      */
-    public getAllTaskList () {
+    public getAllTaskList ():Promise<ApiResult> {
+
+        // 该接口， 最先调用，所有无需每个方法检测， 这个检测即可
+        if (this.server === '') {
+            return new Promise((resolve) => {
+                resolve({success: false, code: ErrorCode.SQLMAPIAPI_NOT_CONFIG});
+            });
+        }
+
         const api = `/admin/list`;
         return Request.get(`${this.server}${api}`).then((res: any) => {
             if (!res.success) {
                 console.error(`get all task list fail`);
             }
-            return res.tasks;
+            return {success: true, data: res.tasks};
         }).catch(err => {
             console.error(`[e]getAllTaskList: %c${err}`, 'color: green');
+            return {success: false, code: ErrorCode.FETCH_FAIL};
         })
     }
 

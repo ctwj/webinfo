@@ -25,6 +25,7 @@
             "css": ["content-scripts/main.css"]
         }
     ],
+    "options_page": "options/index.html",
     "permissions": [
         "declarativeContent", "activeTab", "storage", "tabs"
     ]
