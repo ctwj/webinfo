@@ -1,4 +1,5 @@
 import { ComponentManager } from "@/components/manager";
+import { Command, MSG } from "@/components/sqlmap/const";
 
 const manager = new ComponentManager();
 manager.runBackground();
@@ -9,6 +10,13 @@ chrome.action.onClicked.addListener(tab => {
         chrome.tabs.sendMessage(tab.id, { toggleVisible: true });
     }
 });
+
+// 监听 打开options页面
+chrome.runtime.onMessage.addListener((message: Command, sender, sendResponse) => {
+    if (message?.command === MSG.TASK_OPEN_OPTIONS) {
+        chrome.runtime.openOptionsPage();
+    }
+})
 
 // 发现是 google 页面并存在搜索结果列表
 // var searchRule = {

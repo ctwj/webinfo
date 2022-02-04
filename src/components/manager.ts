@@ -60,11 +60,11 @@ export class ComponentManager {
      */
     public runBackground() {
         this.componentList.forEach(async component => {
-            const enable = await component.isEnable();
-            if (await component.isEnable()) {
-                component.background();
-            }
-            
+            // const enable = await component.isEnable();
+            // if (await component.isEnable()) {
+            //     component.background();
+            // }
+            component.background();
         })
         console.log(`[i]backgournd register finished!`);
     }

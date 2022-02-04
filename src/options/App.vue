@@ -103,6 +103,7 @@ export default defineComponent({
 
         const disableComponent = (component:ComponentData, val:boolean) => {
             console.log('disable component', component.configs);
+            component.component.setSwitch(val);
         }
 
         // 修改配置

@@ -27,6 +27,10 @@ export class BaseComponent implements ExtensionComponent {
         });
     }
 
+    public async setSwitch (enable: boolean) {
+        chrome.storage.local.set({[this.getSwitchKey()]: enable})
+    }
+
     /**
      * 组件是否已经启用
      * @returns 

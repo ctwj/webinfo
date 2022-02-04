@@ -1,8 +1,5 @@
 <template>
     <div v-loading="loading" class="sqlmap-container">
-        <el-alert v-if="errorInfo.error" :title="errorInfo.msg" type="error">
-            请确定配置的 sqlmapapi 地址是否有效， 点击<a :href="optionsUrl" target="_blank">修改配置</a>
-        </el-alert>
         <el-row :gutter="20" :justify="'space-between'" :align="'middle'" class="header">
             <el-col :span="12">
                 <el-input v-model="search" class="w-50 m-2" placeholder="Type something">
@@ -77,7 +74,18 @@
                         >Delete</el-button
                     >
                 </template>
-                </el-table-column>
+            </el-table-column>
+            <template v-slot:empty>
+                <el-alert v-if="!isEnable" :title="'请先启用 sqlmap 功能！'" type="warning">
+                    sqlmap功能没有启用， 点击 <el-button type="text" @click="toOptions">前去开启</el-button>
+                </el-alert>
+                <el-alert v-if="isEnable && !isConfig" :title="'请先配置 sqlmap api 地址！'" type="warning">
+                    sqlmapapi 尚未配置，点击 <el-button type="text" @click="toOptions">前去配置</el-button>
+                </el-alert>
+                <el-alert v-if="isEnable && isconfig && errorInfo.error" :title="errorInfo.msg" type="error">
+                    请确定配置的 sqlmap api 地址是否有效， 点击 <el-button type="text" @click="toOptions">修改配置</el-button>
+                </el-alert>
+            </template>
         </el-table>
         <el-row :gutter="20" class="footer">
             <el-col :span="24">
@@ -105,6 +113,7 @@ import { MSG, TASK_STATUS, CommandReply, PORT_NAME, TableRecord } from './const'
 
 import { BIconSearch, BIconDashCircleFill, BIconCaretRightSquare } from 'bootstrap-icons-vue';
 import { ErrorCode, getErrorByCode } from '../type';
+import { SqlmapComponent } from './sqlmap';
 
 
 
@@ -115,8 +124,8 @@ export default  defineComponent({
     },
     setup: () => {
 
-        let port;
-        const optionsUrl = chrome.runtime.getURL('options/index.html');
+        let port:chrome.runtime.Port;
+        // const optionsUrl = chrome.runtime.getURL('options/index.html');
         const STATUS = {
             FINISH: TASK_STATUS.FINISH,
             RUNNING: TASK_STATUS.RUNNING,
@@ -128,11 +137,14 @@ export default  defineComponent({
             msg: '',
         });
         const search = ref('');
+        const isEnable = ref(false);
+        const isConfig = ref(false);
         const loading = ref(false);
         const logVisable = ref(false);
         const detailVisable = ref(false);
         const tableData = reactive({list: [] as TableRecord[]});
         const multipleSelection = ref<TableRecord[]>([])
+        const component = new SqlmapComponent();
 
         // 处理 TASK_LIST_REPLY 返回数据
         const taskListReplyHandler = (data: TableRecord[]) => {
@@ -161,13 +173,17 @@ export default  defineComponent({
         }
 
         // mounted
-        onMounted( () => {
-            loading.value = true;
-
+        onMounted( async () => {
+            isEnable.value = await component.isEnable();
+            isConfig.value = await component.getConfig().get('sqlmapapi');
+            if (!isEnable.value || !isConfig.value) {
+                return;
+            }
             // popup 受跨域限制，所有请求，放到 background 中执行
             port = chrome.runtime.connect({name: PORT_NAME});
-            port.postMessage({command: MSG.TASK_LIST});
             port.onMessage.addListener(msgHandler);
+            loading.value = true;
+            port.postMessage({command: MSG.TASK_LIST});
         });
 
         // 处理table选中
@@ -221,14 +237,21 @@ export default  defineComponent({
         const tableRowClassName = ({ row, rowIndex, }: { row: TableRecord, rowIndex: number}) => {
             return row.inject ? 'success-row' : '';
         }
+
+        const toOptions = () => {
+            chrome.runtime.sendMessage({command: MSG.TASK_OPEN_OPTIONS}, function(response) {
+                console.log(response);
+            });
+        }
         
         return {
-            STATUS,
-            tableData, search, errorInfo, optionsUrl,
+            STATUS, isEnable, isConfig,
+            tableData, search, errorInfo,
             loading, detailVisable, logVisable, 
             handleSelectionChange, handleDelete, handleLog, handleStart, handleDetail,
             getStatusText, getTagTypeByStatus,
             tableRowClassName,
+            toOptions,
         }
     }
 });

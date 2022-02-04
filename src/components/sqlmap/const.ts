@@ -25,6 +25,8 @@ export enum MSG {
     // 移除 sqlmap 任务
     TASK_REMOVE = 'taskRemove',
     TASK_REMOVE_REPLY = 'taskRemoveReply',
+    // 打开options
+    TASK_OPEN_OPTIONS = 'openOptions',
 }
 
 // 任务状态
