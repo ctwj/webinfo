@@ -1,9 +1,11 @@
 
 export interface ExtensionComponent {
-    name: string;
-    desc: string;
-    content():void;
-    background():void;
+    name: string;        // 名字
+    desc: string;        // 描述
+    canDisable: boolean; // 是否能够被禁用
+    content():void;      // content script 内容
+    background():void;   // background 内容
+    setSwitch(enable: boolean):Promise<void>;    // 设置开关
 }
 
 
@@ -47,3 +49,8 @@ export interface ApiResult {
     code?: string;
     data?: any;
 }
+
+/**
+ * 根菜单id
+ */
+export const PARENT_MENU_ID = 'webinfo-menu';

@@ -1,8 +1,18 @@
 import { ComponentManager } from "@/components/manager";
 import { Command, MSG } from "@/components/sqlmap/const";
 
-const manager = new ComponentManager();
-manager.runBackground();
+const PARENT_MENU_ID = 'webinfo-menu';
+
+// 注册根菜单
+chrome.contextMenus.create(
+    {
+        id: PARENT_MENU_ID,
+        title: 'webinfo',
+        contexts: ['page'],
+        documentUrlPatterns: ['<all_urls>'],
+    },
+
+);
 
 // action 的 点击事件, 点击图标，弹出面板
 chrome.action.onClicked.addListener(tab => {
@@ -37,3 +47,6 @@ chrome.runtime.onMessage.addListener((message: Command, sender, sendResponse) =>
 //         chrome.declarativeContent.onPageChanged.addRules([searchRule]);
 //     });
 // });
+
+const manager = new ComponentManager();
+manager.runBackground();

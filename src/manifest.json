@@ -27,6 +27,7 @@
     ],
     "options_page": "options/index.html",
     "permissions": [
+        "contextMenus",
         "declarativeContent", "activeTab", "storage", "tabs"
     ]
 }

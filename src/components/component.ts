@@ -1,10 +1,15 @@
 import { ComponnetConfig } from './config';
 import { ConfigType, ExtensionComponent } from './type';
 
+/**
+ * BaseComponent
+ * background 和 content-script 分别有一个实例对象
+ * 类里面变量不互通，如果需要互通使用 chrome.storage.locals
+ */
 export class BaseComponent implements ExtensionComponent {
     name = 'base';
     desc = 'component';
-    
+    canDisable = true;
     default_switch = true;
 
     public config = new ComponnetConfig(this.name,[]);

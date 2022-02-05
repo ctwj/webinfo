@@ -1,6 +1,7 @@
 import { BaseComponent } from "./component";
 
 import { SqlmapComponent } from './sqlmap/sqlmap';
+import { AutomaticPageComponent } from './automatic_page/automatic_page'; 
 
 /**
  * 组件管理器
@@ -10,8 +11,10 @@ export class ComponentManager {
     private componentList: BaseComponent[] = [];
 
     constructor () {
-        const sqlmap = new SqlmapComponent();
-        this.Register(sqlmap);
+        // const sqlmap = new SqlmapComponent();
+        // const automaticPage = new AutomaticPageComponent();
+        this.Register(new SqlmapComponent());
+        this.Register(new AutomaticPageComponent());
     }
 
     /**
