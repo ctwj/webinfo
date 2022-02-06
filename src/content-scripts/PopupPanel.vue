@@ -1,10 +1,17 @@
 <template>
     <div class="panel-container">
       <el-tabs class="panel-tabs" v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane class="panel-item" label="User" name="first">
+        <el-tab-pane class="panel-item" label="Information" name="info">
+            <el-container>
+            </el-container>
+        </el-tab-pane>
+        <el-tab-pane class="panel-item" label="Sqlmap" name="first">
             <sqlmap-panel />
         </el-tab-pane>
-        <el-tab-pane label="Config" name="second">Config</el-tab-pane>
+        <el-tab-pane label="Config" name="second">
+            <el-container>
+            </el-container>
+        </el-tab-pane>
       </el-tabs>
     </div>
 </template>
