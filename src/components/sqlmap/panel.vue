@@ -97,14 +97,37 @@
         </el-row>
         <el-dialog
             v-model="logVisable"
-            title="Log"
-            width="30%"
+            title="Detail"
+            width="600px"
         >
-            <span>This is a message</span>
+            <div style="max-height: 320px;overflow-y: auto;">
+                <el-timeline>
+                    <el-timeline-item v-for="item in logData.list" :key="item" center :timestamp="item.time" placement="top">
+                        <span :class="{
+                            'warning-text': item.level === 'WARNING',
+                            'critical-text': item.level === 'CRITICAL',
+                        }">{{ item.message }}</span>
+                    </el-timeline-item>
+                </el-timeline>
+            </div>
             <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="logVisable = false">Close</el-button>
-            </span>
+                <span class="dialog-footer">
+                    <el-button @click="logVisable = false">Close</el-button>
+                </span>
+            </template>
+        </el-dialog>
+        <el-dialog
+            v-model="detailVisable"
+            title="Log"
+            width="600px"
+        >
+            <div style="max-height: 320px;overflow-y: auto;">
+                {{ detailData }}
+            </div>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="logVisable = false">Close</el-button>
+                </span>
             </template>
         </el-dialog>
     </div>
@@ -118,7 +141,11 @@ import { BIconSearch, BIconDashCircleFill, BIconCaretRightSquare } from 'bootstr
 import { ErrorCode, getErrorByCode } from '../type';
 import { SqlmapComponent } from './sqlmap';
 
-
+interface LogData  {
+    time:string;
+    level:string;
+    message:string;
+}
 
 export default  defineComponent({
     name: 'SqlmapPanel',
@@ -146,12 +173,28 @@ export default  defineComponent({
         const logVisable = ref(false);
         const detailVisable = ref(false);
         const tableData = reactive({list: [] as TableRecord[]});
+        const logData = reactive({list: [] as LogData[]});
+        const detailData = ref('');
         const multipleSelection = ref<TableRecord[]>([])
         const component = new SqlmapComponent();
 
         // 处理 TASK_LIST_REPLY 返回数据
         const taskListReplyHandler = (data: TableRecord[]) => {
             tableData.list = data;
+            loading.value = false;
+        };
+
+        // 处理 TASK_LOG_REPLY 返回数据
+        const taskLogReplyHandler = (data: LogData[]) => {
+            logData.list = data;
+            logVisable.value = true;
+            loading.value = false;
+        };
+
+        // 处理 TASK_LOG_REPLY 返回数据
+        const taskDetailReplyHandler = (data: string) => {
+            detailData.value = data;
+            detailVisable.value = true;
             loading.value = false;
         };
 
@@ -170,6 +213,12 @@ export default  defineComponent({
             switch (msg.command) {
                 case MSG.TASK_LIST_REPLY:
                     taskListReplyHandler(msg.data);
+                    break;
+                case MSG.TASK_LOG_REPLY:
+                    taskLogReplyHandler(msg.data);
+                    break;
+                case MSG.TASK_DETAIL_REPLY:
+                    taskDetailReplyHandler(msg.data);
                     break;
                 default:
             }
@@ -198,7 +247,8 @@ export default  defineComponent({
         // 删除任务
         const handleDelete = (index:number, record:TableRecord) => {
             console.log(`[i]Delete index:${index} item!`);
-            console.log(record);
+            loading.value = true;
+            port.postMessage({command: MSG.TASK_DELETE, taskId: record.taskId});
         }
 
         // 开始任务
@@ -210,13 +260,15 @@ export default  defineComponent({
         // 日志
         const handleLog = (index:number, record:TableRecord) => {
             console.log(`[i]Log index:${index} item!`);
-            console.log(record);
+            loading.value = true;
+            port.postMessage({command: MSG.TASK_LOG, taskId: record.taskId});
         };
 
         // 详情
         const handleDetail = (index:number, record:TableRecord) => {
             console.log(`[i]Log index:${index} item!`);
-            console.log(record);
+            loading.value = true;
+            port.postMessage({command: MSG.TASK_DETAIL, taskId: record.taskId, url: record.url});
         };
 
         // 获取状态文案
@@ -242,6 +294,9 @@ export default  defineComponent({
             return row.inject ? 'success-row' : '';
         }
 
+        /**
+         * 打开选项页面
+         */
         const toOptions = () => {
             chrome.runtime.sendMessage({command: MSG.TASK_OPEN_OPTIONS}, function(response) {
                 console.log(response);
@@ -250,7 +305,7 @@ export default  defineComponent({
         
         return {
             STATUS, isEnable, isConfig,
-            tableData, search, errorInfo,
+            tableData, logData, detailData, search, errorInfo,
             loading, detailVisable, logVisable, 
             handleSelectionChange, handleDelete, handleLog, handleStart, handleDetail,
             getStatusText, getTagTypeByStatus,
@@ -279,5 +334,11 @@ export default  defineComponent({
 }
 .sqlmap-container  .success-row {
     background-color: #f0f9eb;
+}
+.warning-text {
+    color: #E6A23C;
+}
+.critical-text {
+    color: #F56C6C;
 }
 </style>

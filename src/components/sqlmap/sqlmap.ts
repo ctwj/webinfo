@@ -31,7 +31,7 @@ export class SqlmapComponent extends BaseComponent {
             type: ConfigType.INPUT,
             name: "sqlmapapi",
             title: "SqlmapApi Address",
-            description: "sqlmap api 地址, 直接访问地址， 如果界面显示 ‘Nothing here’ 则是一个有效的api地址",
+            description: "sqlmap api 地址,  结尾不要有反斜线，直接访问地址， 如果界面显示 ‘Nothing here’ 则是一个有效的api地址",
             default: '',
             value: '',
         },
@@ -148,8 +148,6 @@ export class SqlmapComponent extends BaseComponent {
      */
     private async taskListMsgHandler (msg: Command, port: chrome.runtime.Port) {
         let cmdMsg: Command = msg;
-    
-        console.log('message from page', msg);
 
         // 获取任务列表
         if (cmdMsg.command === MSG.TASK_LIST) {
@@ -206,6 +204,49 @@ export class SqlmapComponent extends BaseComponent {
     }
 
     /**
+     * 获取 任务log
+     * @param msg 
+     * @param port 
+     */
+    private async taskLogHandler (msg: Command, port: chrome.runtime.Port) {
+        this.sdk?.getScanLog(msg.taskId as string).then(async res => {
+            const replyMsg: CommandReply = { command: MSG.TASK_LOG_REPLY, success: true, data: res }
+            port.postMessage(replyMsg);
+        }).catch((err: any) => {
+            console.log('get taskk log error:', err);
+            const errMsg: CommandReply = { command: MSG.TASK_LIST_REPLY, success: false, data: err }
+            port.postMessage(errMsg);
+        })
+    }
+
+    /**
+     * 获取 任务detail
+     * @param msg 
+     * @param port 
+     */
+    private async taskDetailHandler(msg: Command, port: chrome.runtime.Port) {
+        const uri = new URL(msg.url as string);
+        this.sdk?.downloadTask(msg.taskId as string, uri.hostname, 'log').then(async res => {
+            const replyMsg: CommandReply = { command: MSG.TASK_DETAIL_REPLY, success: true, data: res }
+            port.postMessage(replyMsg);
+        }).catch((err: any) => {
+            console.log('get taskk download error:', err);
+            const errMsg: CommandReply = { command: MSG.TASK_DETAIL_REPLY, success: false, data: err }
+            port.postMessage(errMsg);
+        })
+    }
+
+    /**
+     * 删除 任务
+     * @param msg 
+     * @param port 
+     */
+    private async taskDeleteHandler(msg: Command, port: chrome.runtime.Port) {
+        
+
+    }
+
+    /**
      * 后台运行, 
      */
     public background() {
@@ -230,6 +271,15 @@ export class SqlmapComponent extends BaseComponent {
                 switch( msg.command) {
                     case MSG.TASK_LIST:
                         this.taskListMsgHandler(msg, port);
+                        break;
+                    case MSG.TASK_LOG:
+                        this.taskLogHandler(msg, port);
+                        break;
+                    case MSG.TASK_DETAIL:
+                        this.taskDetailHandler(msg, port);
+                        break;
+                    case MSG.TASK_DELETE:
+                        this.taskDeleteHandler(msg, port);
                         break;
                     default:
                 }

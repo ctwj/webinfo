@@ -4,6 +4,8 @@ export const PORT_NAME = 'sqlmap-channel';
 // 命令
 export interface Command {
     command: MSG;
+    taskId?: string;
+    url?: string;
 }
 
 // 命令返回结构
@@ -27,6 +29,15 @@ export enum MSG {
     TASK_REMOVE_REPLY = 'taskRemoveReply',
     // 打开options
     TASK_OPEN_OPTIONS = 'openOptions',
+    // 任务Log
+    TASK_LOG = 'getTaskLog',
+    TASK_LOG_REPLY = 'getTaskLogReply',
+    // 任务 detail
+    TASK_DETAIL = 'getTaskDetail',
+    TASK_DETAIL_REPLY = 'getTaskDetailReply',
+    // 任务 delete
+    TASK_DELETE = 'taskDelete',
+    TASK_DELETE_REPLY = 'taskDeleteReply',
 }
 
 // 任务状态

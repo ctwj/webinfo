@@ -31,7 +31,7 @@ export default class SqlmapSDK extends Singleton {
      * @param url 
      * @returns 
      */
-    public scanUrl(url:string, cb:((taskId:string, url: string)=>void) = ()=>{}):Promise<boolean> {
+    public async scanUrl(url:string, cb:((taskId:string, url: string)=>void) = ()=>{}):Promise<boolean> {
         let id:string;
 
         return this.createNewTask()
@@ -58,7 +58,7 @@ export default class SqlmapSDK extends Singleton {
             "taskid": "5bd92b225dd48d9f"
         }
      */
-    public createNewTask():Promise<string> {
+    public async createNewTask():Promise<string> {
         const api = '/task/new';
         return Request.get(`${this.server}${api}`).then((res:any) => {
             if (!res.success) {
@@ -80,7 +80,7 @@ export default class SqlmapSDK extends Singleton {
         "success": true
      }
      */
-    public setTaskOptions(taskId: string, options:SqlmapTestParmater):Promise<boolean> {
+    public async setTaskOptions(taskId: string, options:SqlmapTestParmater):Promise<boolean> {
         const api = `/option/${taskId}/set`;
         return Request.post(`${this.server}${api}`, options).then((res: any) => {
             if (res.success) {
@@ -104,7 +104,7 @@ export default class SqlmapSDK extends Singleton {
         "engineid": 148
     }
      */
-    public startTargetScan(taskId: string) {
+    public async startTargetScan(taskId: string) {
         const api = `/scan/${taskId}/start`;
         const params = {
             "threads": 5,"getCurrentUser": true,
@@ -126,7 +126,7 @@ export default class SqlmapSDK extends Singleton {
     /**
      * @get("/option/<taskid>/list") List options for a certain task ID
      */
-    public getTargetOptions(taskId: string) {
+    public async getTargetOptions(taskId: string) {
         const api = `/option/${taskId}/list`;
         return Request.get(`${this.server}${api}`).then((res: any) => {
             if (!res.success) {
@@ -375,7 +375,7 @@ export default class SqlmapSDK extends Singleton {
             "error": []
         }
      */
-    public getReuslt(taskId: string) {
+    public async getReuslt(taskId: string) {
         const api = `/scan/${taskId}/data`;
         return Request.get(`${this.server}${api}`).then((res: any) => {
             if (!res.success) {
@@ -418,7 +418,7 @@ export default class SqlmapSDK extends Singleton {
         "tasks_num": 1
     }
      */
-    public getAllTaskList ():Promise<ApiResult> {
+    public async getAllTaskList ():Promise<ApiResult> {
 
         // 该接口， 最先调用，所有无需每个方法检测， 这个检测即可
         if (this.server === '') {
@@ -459,14 +459,14 @@ export default class SqlmapSDK extends Singleton {
         "file": "eyd1cmwnOiAnaHR0cHM6Ly93d3cuYWFrYXJib29rcy5jb206NDQzL2RldGFpbHMucGhwJywgJ3F1ZXJ5JzogJ2JpZD04NjMnLCAnZGF0YSc6IE5vbmV9Cjogeyd1cmwnOiAnaHR0cHM6Ly93d3cuYWFrYXJib29rcy5jb206NDQzL2RldGFpbHMucGhwJywgJ3F1ZXJ5JzogJ2JpZD04NjMnLCAnZGF0YSc6IE5vbmV9Clt7J3BsYWNlJzogJ0dFVCcsICdwYXJhbWV0ZXInOiAnYmlkJywgJ3B0eXBlJzogMiwgJ3ByZWZpeCc6ICInIiwgJ3N1ZmZpeCc6ICIgQU5EICdbUkFORFNUUl0nPSdbUkFORFNUUl0iLCAnY2xhdXNlJzogWzEsIDgsIDldLCAnbm90ZXMnOiBbXSwgJ2RhdGEnOiB7MTogeyd0aXRsZSc6ICdBTkQgYm9vbGVhbi1iYXNlZCBibGluZCAtIFdIRVJFIG9yIEhBVklORyBjbGF1c2UnLCAncGF5bG9hZCc6ICJiaWQ9ODYzJyBBTkQgNTkwMD01OTAwIEFORCAnRXNYUyc9J0VzWFMiLCAnd2hlcmUnOiAxLCAndmVjdG9yJzogJ0FORCBbSU5GRVJFTkNFXScsICdjb21tZW50JzogJycsICd0ZW1wbGF0ZVBheWxvYWQnOiBOb25lLCAnbWF0Y2hSYXRpbyc6IDAuOTE1LCAndHJ1ZUNvZGUnOiAyMDAsICdmYWxzZUNvZGUnOiAyMDB9LCA2OiB7J3RpdGxlJzogJ0dlbmVyaWMgVU5JT04gcXVlcnkgKE5VTEwpIC0gMSB0byAyMCBjb2x1bW5zJywgJ3BheWxvYWQnOiAiYmlkPS0zNzEwJyBVTklPTiBBTEwgU0VMRUNUIENPTkNBVCgweDcxNzY2MjZhNzEsMHg0NDQzNDg2MTU0NjQ3YTc2NzA3NDY3NTM0NTRlNGI0MjQyNGU3NzQ4NmQ2ZTcyNDc0ZjcxNDY2MjRlNzE2ODQzNzQ2ODUyNzE2NjUxNGI0YywweDcxNmI3NjcxNzEpLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTC0tIC0iLCAnd2hlcmUnOiAyLCAndmVjdG9yJzogKDAsIDI0LCAnW0dFTkVSSUNfU1FMX0NPTU1FTlRdJywgIiciLCAiIEFORCAnW1JBTkRTVFJdJz0nW1JBTkRTVFJdIiwgJ05VTEwnLCAyLCBGYWxzZSwgTm9uZSwgTm9uZSwgTm9uZSksICdjb21tZW50JzogJ1tHRU5FUklDX1NRTF9DT01NRU5UXScsICd0ZW1wbGF0ZVBheWxvYWQnOiBOb25lLCAnbWF0Y2hSYXRpbyc6IDAuOTE1LCAndHJ1ZUNvZGUnOiBOb25lLCAnZmFsc2VDb2RlJzogTm9uZX19LCAnY29uZic6IHsndGV4dE9ubHknOiBOb25lLCAndGl0bGVzJzogTm9uZSwgJ2NvZGUnOiBOb25lLCAnc3RyaW5nJzogJ1NleCcsICdub3RTdHJpbmcnOiBOb25lLCAncmVnZXhwJzogTm9uZSwgJ29wdGltaXplJzogTm9uZX0sICdkYm1zJzogTm9uZSwgJ2RibXNfdmVyc2lvbic6IE5vbmUsICdvcyc6IE5vbmV9XQo6IHsncGxhY2UnOiAnR0VUJywgJ3BhcmFtZXRlcic6ICdiaWQnLCAncHR5cGUnOiAyLCAncHJlZml4JzogIiciLCAnc3VmZml4JzogIiBBTkQgJ1tSQU5EU1RSXSc9J1tSQU5EU1RSXSIsICdjbGF1c2UnOiBbMSwgOCwgOV0sICdub3Rlcyc6IFtdLCAnZGF0YSc6IHsxOiB7J3RpdGxlJzogJ0FORCBib29sZWFuLWJhc2VkIGJsaW5kIC0gV0hFUkUgb3IgSEFWSU5HIGNsYXVzZScsICdwYXlsb2FkJzogImJpZD04NjMnIEFORCA1OTAwPTU5MDAgQU5EICdFc1hTJz0nRXNYUyIsICd3aGVyZSc6IDEsICd2ZWN0b3InOiAnQU5EIFtJTkZFUkVOQ0VdJywgJ2NvbW1lbnQnOiAnJywgJ3RlbXBsYXRlUGF5bG9hZCc6IE5vbmUsICdtYXRjaFJhdGlvJzogMC45MTUsICd0cnVlQ29kZSc6IDIwMCwgJ2ZhbHNlQ29kZSc6IDIwMH0sIDY6IHsndGl0bGUnOiAnR2VuZXJpYyBVTklPTiBxdWVyeSAoTlVMTCkgLSAxIHRvIDIwIGNvbHVtbnMnLCAncGF5bG9hZCc6ICJiaWQ9LTM3MTAnIFVOSU9OIEFMTCBTRUxFQ1QgQ09OQ0FUKDB4NzE3NjYyNmE3MSwweDQ0NDM0ODYxNTQ2NDdhNzY3MDc0Njc1MzQ1NGU0YjQyNDI0ZTc3NDg2ZDZlNzI0NzRmNzE0NjYyNGU3MTY4NDM3NDY4NTI3MTY2NTE0YjRjLDB4NzE2Yjc2NzE3MSksTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLE5VTEwsTlVMTCxOVUxMLS0gLSIsICd3aGVyZSc6IDIsICd2ZWN0b3InOiAoMCwgMjQsICdbR0VORVJJQ19TUUxfQ09NTUVOVF0nLCAiJyIsICIgQU5EICdbUkFORFNUUl0nPSdbUkFORFNUUl0iLCAnTlVMTCcsIDIsIEZhbHNlLCBOb25lLCBOb25lLCBOb25lKSwgJ2NvbW1lbnQnOiAnW0dFTkVSSUNfU1FMX0NPTU1FTlRdJywgJ3RlbXBsYXRlUGF5bG9hZCc6IE5vbmUsICdtYXRjaFJhdGlvJzogMC45MTUsICd0cnVlQ29kZSc6IE5vbmUsICdmYWxzZUNvZGUnOiBOb25lfX0sICdjb25mJzogeyd0ZXh0T25seSc6IE5vbmUsICd0aXRsZXMnOiBOb25lLCAnY29kZSc6IE5vbmUsICdzdHJpbmcnOiAnU2V4JywgJ25vdFN0cmluZyc6IE5vbmUsICdyZWdleHAnOiBOb25lLCAnb3B0aW1pemUnOiBOb25lfSwgJ2RibXMnOiBOb25lLCAnZGJtc192ZXJzaW9uJzogTm9uZSwgJ29zJzogTm9uZX0KYmFjay1lbmQgREJNUzogTXlTUUwgPj0gNS4wLjAKYm9va3NfcmFodWxAbG9jYWxob3N0CmN1cnJlbnQgdXNlcjogJ2Jvb2tzX3JhaHVsQGxvY2FsaG9zdCcKYWFrYXJib29rX2FtaXRyYWh1bApjdXJyZW50IGRhdGFiYXNlOiAnYWFrYXJib29rX2FtaXRyYWh1bCcKRmFsc2UKY3VycmVudCB1c2VyIGlzIERCQTogRmFsc2UKeyInYm9va3NfcmFodWwnQCdsb2NhbGhvc3QnIjogWydVU0FHRSddfQpkYXRhYmFzZSBtYW5hZ2VtZW50IHN5c3RlbSB1c2VycyBwcml2aWxlZ2VzOgpbKl0gJ2Jvb2tzX3JhaHVsJ0AnbG9jYWxob3N0JyBbMV06CiAgICBwcml2aWxlZ2U6IFVTQUdFCgpbJ2Fha2FyYm9va19hbWl0cmFodWwnLCAnaW5mb3JtYXRpb25fc2NoZW1hJ10KYXZhaWxhYmxlIGRhdGFiYXNlcyBbMl06ClsqXSBhYWthcmJvb2tfYW1pdHJhaHVsClsqXSBpbmZvcm1hdGlvbl9zY2hlbWEKCnsnaW5mb3JtYXRpb25fc2NoZW1hJzogezE6IFsnVVNFUl9QUklWSUxFR0VTJywgJ1BST0NFU1NMSVNUJ10sIDM0NzogWydTRVNTSU9OX1NUQVRVUycsICdHTE9CQUxfU1RBVFVTJ10sIDI4OiBbJ1RBQkxFX0NPTlNUUkFJTlRTJywgJ1NUQVRJU1RJQ1MnLCAnS0VZX0NPTFVNTl9VU0FHRSddLCA0NTU6IFsnU0VTU0lPTl9WQVJJQUJMRVMnXSwgNDA6IFsnQ0hBUkFDVEVSX1NFVFMnXSwgNDQxOiBbJ0dMT0JBTF9WQVJJQUJMRVMnXSwgMjogWydTQ0hFTUFUQSddLCAxODogWydTQ0hFTUFfUFJJVklMRUdFUyddLCAzNjogWydJTk5PREJfRlRfREVGQVVMVF9TVE9QV09SRCddLCA4NzogWydQQVJUSVRJT05TJywgJ1RBQkxFUyddLCA4MDc6IFsnQ09MVU1OUyddLCAyMTk6IFsnQ09MTEFUSU9OX0NIQVJBQ1RFUl9TRVRfQVBQTElDQUJJTElUWScsICdDT0xMQVRJT05TJ10sIDQyOiBbJ1BMVUdJTlMnXSwgOTogWydFTkdJTkVTJ119LCAnYWFrYXJib29rX2FtaXRyYWh1bCc6IHsxOTExOiBbJ2Jvb2tfY2F0ZWdvcnknXSwgNTE3OiBbJ2N1c3RvbWVyX2RldGFpbHMnXSwgNTE2OiBbJ2N1c3RvbWVyX2JpbGxfZGV0YWlscyddLCAxOiBbJ2Rpc2NvdW50JywgJ3Nob3Bfc2VydmljZScsICd0ZXJtc19jb25kaXRpb25zJ10sIDcwMTogWydhdXRob3InXSwgNDogWydob21lX29mZmVyJywgJ2F3YXJkJywgJ3NsaWRlciddLCAzNzogWydjb3Vwb24nXSwgMTYzNjogWydnYXRld2F5X29yZGVyX2RhdGFpbCddLCA2Mjk6IFsnbmV3X29yZGVyX2RhdGFpbCddLCAxNTM2OiBbJ2dhdGV3YXlfb3JkZXInXSwgMzogWydgbGFuZ3VhZ2VgJ10sIDEzMTM6IFsnYm9va19hdXRob3InXSwgMjogWydiaW5kaW5nJywgJ3JlZ2lvbicsICdhZG1pbiddLCA0Nzg6IFsnc291bmRfY291bnRyeSddLCA2OiBbJ2V2ZW50J10sIDkzNjogWydjdXN0b21lciddLCAyNzogWydjYXRhbG9nX2NhdGVnb3J5J10sIDUwOiBbJ2N1cG9uX2N1c3RvbWVyJ10sIDMyODogWyduZXdfb3JkZXInXSwgMTAwNzogWydib29rcyddfX0KRGF0YWJhc2U6IGluZm9ybWF0aW9uX3NjaGVtYQorLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLSsKfCBUYWJsZSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgRW50cmllcyB8CistLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0rLS0tLS0tLS0tKwp8IENPTFVNTlMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCA4MDcgICAgIHwKfCBTRVNTSU9OX1ZBUklBQkxFUyAgICAgICAgICAgICAgICAgICAgIHwgNDU1ICAgICB8CnwgR0xPQkFMX1ZBUklBQkxFUyAgICAgICAgICAgICAgICAgICAgICB8IDQ0MSAgICAgfAp8IEdMT0JBTF9TVEFUVVMgICAgICAgICAgICAgICAgICAgICAgICAgfCAzNDcgICAgIHwKfCBTRVNTSU9OX1NUQVRVUyAgICAgICAgICAgICAgICAgICAgICAgIHwgMzQ3ICAgICB8CnwgQ09MTEFUSU9OX0NIQVJBQ1RFUl9TRVRfQVBQTElDQUJJTElUWSB8IDIxOSAgICAgfAp8IENPTExBVElPTlMgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAyMTkgICAgIHwKfCBQQVJUSVRJT05TICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgODcgICAgICB8CnwgVEFCTEVTICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDg3ICAgICAgfAp8IFBMVUdJTlMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCA0MiAgICAgIHwKfCBDSEFSQUNURVJfU0VUUyAgICAgICAgICAgICAgICAgICAgICAgIHwgNDAgICAgICB8CnwgSU5OT0RCX0ZUX0RFRkFVTFRfU1RPUFdPUkQgICAgICAgICAgICB8IDM2ICAgICAgfAp8IEtFWV9DT0xVTU5fVVNBR0UgICAgICAgICAgICAgICAgICAgICAgfCAyOCAgICAgIHwKfCBTVEFUSVNUSUNTICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMjggICAgICB8CnwgVEFCTEVfQ09OU1RSQUlOVFMgICAgICAgICAgICAgICAgICAgICB8IDI4ICAgICAgfAp8IFNDSEVNQV9QUklWSUxFR0VTICAgICAgICAgICAgICAgICAgICAgfCAxOCAgICAgIHwKfCBFTkdJTkVTICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgOSAgICAgICB8CnwgU0NIRU1BVEEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDIgICAgICAgfAp8IFBST0NFU1NMSVNUICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAxICAgICAgIHwKfCBVU0VSX1BSSVZJTEVHRVMgICAgICAgICAgICAgICAgICAgICAgIHwgMSAgICAgICB8CistLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0rLS0tLS0tLS0tKwoKRGF0YWJhc2U6IGFha2FyYm9va19hbWl0cmFodWwKKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0rCnwgVGFibGUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IEVudHJpZXMgfAorLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLSsKfCBib29rX2NhdGVnb3J5ICAgICAgICAgICAgICAgICAgICAgICAgIHwgMTkxMSAgICB8CnwgZ2F0ZXdheV9vcmRlcl9kYXRhaWwgICAgICAgICAgICAgICAgICB8IDE2MzYgICAgfAp8IGdhdGV3YXlfb3JkZXIgICAgICAgICAgICAgICAgICAgICAgICAgfCAxNTM2ICAgIHwKfCBib29rX2F1dGhvciAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMTMxMyAgICB8CnwgYm9va3MgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDEwMDcgICAgfAp8IGN1c3RvbWVyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCA5MzYgICAgIHwKfCBhdXRob3IgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgNzAxICAgICB8CnwgbmV3X29yZGVyX2RhdGFpbCAgICAgICAgICAgICAgICAgICAgICB8IDYyOSAgICAgfAp8IGN1c3RvbWVyX2RldGFpbHMgICAgICAgICAgICAgICAgICAgICAgfCA1MTcgICAgIHwKfCBjdXN0b21lcl9iaWxsX2RldGFpbHMgICAgICAgICAgICAgICAgIHwgNTE2ICAgICB8Cnwgc291bmRfY291bnRyeSAgICAgICAgICAgICAgICAgICAgICAgICB8IDQ3OCAgICAgfAp8IG5ld19vcmRlciAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAzMjggICAgIHwKfCBjdXBvbl9jdXN0b21lciAgICAgICAgICAgICAgICAgICAgICAgIHwgNTAgICAgICB8CnwgY291cG9uICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDM3ICAgICAgfAp8IGNhdGFsb2dfY2F0ZWdvcnkgICAgICAgICAgICAgICAgICAgICAgfCAyNyAgICAgIHwKfCBldmVudCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgNiAgICAgICB8CnwgYXdhcmQgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDQgICAgICAgfAp8IGhvbWVfb2ZmZXIgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCA0ICAgICAgIHwKfCBzbGlkZXIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgNCAgICAgICB8CnwgYGxhbmd1YWdlYCAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDMgICAgICAgfAp8IGFkbWluICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAyICAgICAgIHwKfCBiaW5kaW5nICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMiAgICAgICB8CnwgcmVnaW9uICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IDIgICAgICAgfAp8IGRpc2NvdW50ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAxICAgICAgIHwKfCBzaG9wX3NlcnZpY2UgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMSAgICAgICB8CnwgdGVybXNfY29uZGl0aW9ucyAgICAgICAgICAgICAgICAgICAgICB8IDEgICAgICAgfAorLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLSsKCg=="
     }
      */
-    public downloadTask(taskId: string, target:string, file:string) {
+    public async downloadTask(taskId: string, target:string, file:string) {
         //@get("/download/<taskid>/<target>/<filename:path>")
         const api = `/download/${taskId}/${target}/${file}`;
         return Request.get(`${this.server}${api}`).then((res: any) => {
             if (!res.success) {
                 throw Error(`get all task list fail`);
             }
-            return res.tasks;
+            return res.file;
         }).catch(err => {
             console.error(`[e]start sacn fail: %c${err}`, 'color: green');
         })
@@ -476,15 +476,16 @@ export default class SqlmapSDK extends Singleton {
      * 获取扫描日志
      * @get("/scan/<taskid>/log") Retrieve the log messages
      */
-    public getScanLog(taskId: string) {
+    public async getScanLog(taskId: string) {
         const api = `/scan/${taskId}/log`;
         return Request.get(`${this.server}${api}`).then((res: any) => {
             if (!res.success) {
                 throw Error(`get all task list fail`);
             }
-            return res.tasks;
+            console.log('getscanlog', res);
+            return res.log;
         }).catch(err => {
-            console.error(`[e]start sacn fail: %c${err}`, 'color: green');
+            console.error(`[e]get sacn log fail: %c${err}`, 'color: green');
         })
     }
 }
