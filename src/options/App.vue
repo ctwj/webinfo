@@ -9,8 +9,11 @@
             class="mb-4">
             <template #header>
                 <div class="card-header">
-                    <h3>{{ component.name }}</h3>
-                    <div style="display: inline-block">
+                    <div>
+                        <h3>{{ component.name }}</h3>
+                        {{ component.desc }}
+                    </div>
+                    <div v-if="component.canDisable" style="display: inline-block">
                         <el-switch v-model="component.enable" @change="val => disableComponent(component, val)" />
                         {{ component.enable ? '已启用' : '已禁用' }}
                     </div>
@@ -59,6 +62,7 @@ import { ConfigItem, ConfigType } from "@/components/type";
 
 interface ComponentData {
     locked: boolean;    // 锁定， 解锁后， 可以修改
+    canDisable: boolean;// 是否可以禁用
     enable: boolean;    // 组件是否启用
     name: string;       // 组件名字
     desc: string;       // 组件描述
@@ -87,6 +91,7 @@ export default defineComponent({
             components.forEach(async component => {
                 componentData.push({
                     locked: true,
+                    canDisable: component.canDisable,
                     enable: await component.isEnable(),
                     name: component.name,
                     desc: component.desc,

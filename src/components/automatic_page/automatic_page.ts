@@ -11,12 +11,14 @@ enum ChangeStatus {
 
 const ACTION_NEXT_PAGE = 'start-automatic-next-page';
 const MENU_ID = 'automatic-next-page-menu';
+const CLICK_DELAY = 3000;
 
 export class AutomaticPageComponent extends BaseComponent {
 
     // component public
     public name = "automatic_page";
-    public desc = "搜索引擎自动翻页";
+    public desc = "Google搜索引擎自动翻页, 右键菜单开始自动翻页， 只对google生效";
+    public canDisable = false;
 
     // 翻页时间， 翻页6秒后，如果没有继续翻页，翻页状态设置为停止状态
     private changeTime: number | null = null;
@@ -68,7 +70,13 @@ export class AutomaticPageComponent extends BaseComponent {
     }
 
     private nextPage() {
-        console.log('next page happen!');
+        const nextBtn = document.querySelector('#pnnext');
+        this.setStatusNow(!nextBtn ? ChangeStatus.Stop : ChangeStatus.Changing);
+        if (nextBtn) {
+
+            // 存在下一页，3秒后翻页
+            setTimeout( () => (nextBtn as HTMLElement).click(), CLICK_DELAY);
+        } 
     }
 
     private setStatusNow(status: ChangeStatus) {
@@ -89,8 +97,8 @@ export class AutomaticPageComponent extends BaseComponent {
             }
         });
 
-        const status = await Storeage.get(this.getStorageKey('changeTime'));
-        const changeTime = await Storeage.get(this.getStorageKey('changeStatus'));
+        const changeTime = await Storeage.get(this.getStorageKey('changeTime'));
+        const status = await Storeage.get(this.getStorageKey('changeStatus'));
         const now = new Date().getTime();
 
         // 状态为翻页中，并且未超过10秒
@@ -98,6 +106,8 @@ export class AutomaticPageComponent extends BaseComponent {
             && now - changeTime < 10000) {
             this.nextPage();
             return;
+        } else {
+            this.setStatusNow(ChangeStatus.Stop);
         }
         
     }

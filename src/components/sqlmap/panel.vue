@@ -82,8 +82,11 @@
                 <el-alert v-if="isEnable && !isConfig" :title="'请先配置 sqlmap api 地址！'" type="warning">
                     sqlmapapi 尚未配置，点击 <el-button type="text" @click="toOptions">前去配置</el-button>
                 </el-alert>
-                <el-alert v-if="isEnable && isconfig && errorInfo.error" :title="errorInfo.msg" type="error">
+                <el-alert v-if="isEnable && isConfig && errorInfo.error" :title="errorInfo.msg" type="error">
                     请确定配置的 sqlmap api 地址是否有效， 点击 <el-button type="text" @click="toOptions">修改配置</el-button>
+                </el-alert>
+                <el-alert v-if="isEnable && isConfig && !errorInfo.error" :title="'暂无数据'" type="info">
+                    前去 Google 进行搜索，slqmap将自动对搜索结果进行扫描
                 </el-alert>
             </template>
         </el-table>
@@ -177,6 +180,7 @@ export default  defineComponent({
             isEnable.value = await component.isEnable();
             isConfig.value = await component.getConfig().get('sqlmapapi');
             if (!isEnable.value || !isConfig.value) {
+                console.log(`[e]未开启或者未配置sqlmapapi`);
                 return;
             }
             // popup 受跨域限制，所有请求，放到 background 中执行

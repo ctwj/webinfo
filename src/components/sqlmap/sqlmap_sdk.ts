@@ -22,6 +22,10 @@ export default class SqlmapSDK extends Singleton {
         this.server = api;
     }
 
+    public resetServer (api:string) {
+        this.server = api;
+    }
+
     /**
      * 快速开始扫描一个任务
      * @param url 

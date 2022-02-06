@@ -31,7 +31,7 @@ export class SqlmapComponent extends BaseComponent {
             type: ConfigType.INPUT,
             name: "sqlmapapi",
             title: "SqlmapApi Address",
-            description: "sqlmap api 地址, 配置地址后，插件能够自动通过sqlmapapi检测sql注入漏洞",
+            description: "sqlmap api 地址, 直接访问地址， 如果界面显示 ‘Nothing here’ 则是一个有效的api地址",
             default: '',
             value: '',
         },
@@ -74,7 +74,8 @@ export class SqlmapComponent extends BaseComponent {
     public async content () {
 
         // 组件是否启动
-        if (!await this.isEnable()) {
+        if (!await this.isEnable() || !await this.getConfig().get('sqlmapapi')) {
+            console.warn('需要开启sqlmap，并配置sqlmapapi');
             return;
         }
 
@@ -145,7 +146,7 @@ export class SqlmapComponent extends BaseComponent {
      * 获取 任务列表事件处理
      * @param port 
      */
-    private taskListMsgHandler (msg: Command, port: chrome.runtime.Port) {
+    private async taskListMsgHandler (msg: Command, port: chrome.runtime.Port) {
         let cmdMsg: Command = msg;
     
         console.log('message from page', msg);
@@ -154,8 +155,10 @@ export class SqlmapComponent extends BaseComponent {
         if (cmdMsg.command === MSG.TASK_LIST) {
             
             const cache = new SqlmapCache();
-            cache.print();
+            // cache.print(); 
 
+            // 可以配置服务器地址，所以这里获取列表每次都更新下服务器地址
+            this.sdk?.resetServer(await this.getConfig().get('sqlmapapi'));
             this.sdk?.getAllTaskList().then( async res => {
 
                 // getAllTaskList 存在异常场景
@@ -223,8 +226,8 @@ export class SqlmapComponent extends BaseComponent {
         // 监听 connect 命令
         chrome.runtime.onConnect.addListener( port => {
             port.onMessage.addListener( msg => {
-
-                switch( msg.type) {
+                console.log(`[i]get message from port ${JSON.stringify(msg)}`);
+                switch( msg.command) {
                     case MSG.TASK_LIST:
                         this.taskListMsgHandler(msg, port);
                         break;
