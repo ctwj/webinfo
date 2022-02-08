@@ -5,6 +5,7 @@ export const PORT_NAME = 'sqlmap-channel';
 export interface Command {
     command: MSG;
     taskId?: string;
+    taskIds?: string[];
     url?: string;
 }
 
@@ -38,6 +39,9 @@ export enum MSG {
     // 任务 delete
     TASK_DELETE = 'taskDelete',
     TASK_DELETE_REPLY = 'taskDeleteReply',
+    // 任务start
+    TASK_START = 'taskStart',
+    TASK_START_REPLY = 'taskStartReply',
 }
 
 // 任务状态

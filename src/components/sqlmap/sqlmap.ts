@@ -128,7 +128,7 @@ export class SqlmapComponent extends BaseComponent {
     /**
      * 默认数据
      */
-    private createTableRecord (taskId:string, url: string) {
+    public static createTableRecord (taskId:string, url: string) {
         const uri = new URL(url);
         return {
             taskId,
@@ -178,7 +178,7 @@ export class SqlmapComponent extends BaseComponent {
                         if (!options.url) {
                             continue;
                         }
-                        const target = this.createTableRecord(taskId, options.url);
+                        const target = SqlmapComponent.createTableRecord(taskId, options.url);
                         target.status = res.data[key];
                         if (target.status === TASK_STATUS.FINISH) {
                             const resultData = await this.sdk?.getReuslt(taskId);
@@ -237,13 +237,51 @@ export class SqlmapComponent extends BaseComponent {
     }
 
     /**
+     * 开始 任务
+     * @param msg 
+     * @param port 
+     */
+    private async taskStartHandler(msg: Command, port: chrome.runtime.Port) {
+        this.sdk?.startTargetScan(msg.taskId as string).then(async res => {
+            const replyMsg: CommandReply = { command: MSG.TASK_START_REPLY, success: true, data: true }
+            port.postMessage(replyMsg);
+        }).catch((err: any) => {
+            console.log('task start error:', err);
+            const errMsg: CommandReply = { command: MSG.TASK_START_REPLY, success: false, data: err }
+            port.postMessage(errMsg);
+        })
+    }
+
+    /**
      * 删除 任务
      * @param msg 
      * @param port 
      */
     private async taskDeleteHandler(msg: Command, port: chrome.runtime.Port) {
-        
-
+        if (msg.taskId) {
+            this.sdk?.delTask(msg.taskId as string).then(async res => {
+                const replyMsg: CommandReply = { command: MSG.TASK_DELETE_REPLY, success: true, data: res }
+                port.postMessage(replyMsg);
+            }).catch((err: any) => {
+                console.log('get taskk download error:', err);
+                const errMsg: CommandReply = { command: MSG.TASK_DELETE_REPLY, success: false, data: err }
+                port.postMessage(errMsg);
+            })
+        }
+        if (msg.taskIds) {
+            let taskList = [] as Promise<boolean>[];
+            msg.taskIds.forEach(taskId => {
+                taskList.push(new Promise(() => this.sdk?.delTask(taskId)));
+            })
+            Promise.all([...taskList]).then(() => {
+                const replyMsg: CommandReply = { command: MSG.TASK_DELETE_REPLY, success: true, data: true }
+                port.postMessage(replyMsg);
+            }).catch ((err: any) => {
+                console.log('remove tasks error:', err);
+                const errMsg: CommandReply = { command: MSG.TASK_DELETE_REPLY, success: false, data: err }
+                port.postMessage(errMsg);
+            })
+        }
     }
 
     /**
@@ -281,6 +319,9 @@ export class SqlmapComponent extends BaseComponent {
                     case MSG.TASK_DELETE:
                         this.taskDeleteHandler(msg, port);
                         break;
+                    case MSG.TASK_START:
+                        this.taskStartHandler(msg, port);
+                        break;
                     default:
                 }
                 
@@ -293,8 +334,8 @@ export class SqlmapComponent extends BaseComponent {
      * @param taskId 任务ID
      * @param url 任务url
      */
-    private scanUrlCallback(taskId:string, url: string) {
-        new SqlmapCache().set(taskId, this.createTableRecord(taskId, url));
+    public static scanUrlCallback(taskId:string, url: string) {
+        new SqlmapCache().set(taskId, SqlmapComponent.createTableRecord(taskId, url));
     }
 
     /**
@@ -304,7 +345,7 @@ export class SqlmapComponent extends BaseComponent {
      */
     public taskHandler(task: Target, next: () => void, component: BaseComponent) {
         console.log('[i]taskHandler: consumer task ', task.url);
-        (component as SqlmapComponent).sdk?.scanUrl(task.url, this.scanUrlCallback);
+        (component as SqlmapComponent).sdk?.scanUrl(task.url, SqlmapComponent.scanUrlCallback);
         next();
     }
 

@@ -2,20 +2,19 @@
     <div v-loading="loading" class="sqlmap-container">
         <el-row :gutter="20" :justify="'space-between'" :align="'middle'" class="header">
             <el-col :span="12">
-                <el-input v-model="search" class="w-50 m-2" placeholder="Type something">
+                <el-input v-model="search.text" size="small" style="width:120px;margin-right: 8px;" placeholder="search">
                     <template #prefix>
                         <BIconSearch style="margin-left: 8px;vertical-align: middle;"/>
                     </template>
                 </el-input>
+                <el-checkbox v-model="search.showBug" label="只看bug"></el-checkbox>
             </el-col>
             <el-col :span="12">
                 <el-space style="float: right;">
-                    <el-button>
-                    <BIconDashCircleFill style="margin-right: 8px;vertical-align: middle;" />Remove Safe
+                    <el-button @click="deleteSafe">
+                        <BIconDashCircleFill style="margin-right: 8px;vertical-align: middle;" />Remove Nobug
                     </el-button>
-                    <el-button type="danger">
-                        <BIconDashCircleFill style="margin-right: 8px;vertical-align: middle;" />Remove Selection
-                    </el-button>
+                    <el-button @click="reloadTable">Refresh</el-button>
                 </el-space>
             </el-col>
         </el-row>
@@ -44,7 +43,7 @@
                     <BIconCaretRightSquare 
                         v-if="scope.row.status === STATUS.NOT_RUNNING"
                         style="font-size: 16px; margin-left: 8px; vertical-align: middle;"
-                        @click.stop="() => handleStart(scope.row.taskId)" />
+                        @click.stop="() => handleStart(scope.row)" />
                 </template>
             </el-table-column>
             <el-table-column prop="inject" label="Bug" width="80">
@@ -122,11 +121,11 @@
             width="600px"
         >
             <div style="max-height: 320px;overflow-y: auto;">
-                {{ detailData }}
+                <pre>{{ detailData }}</pre>
             </div>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="logVisable = false">Close</el-button>
+                    <el-button @click="detailVisable = false">Close</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -134,10 +133,11 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, reactive, onMounted } from 'vue'
-import { MSG, TASK_STATUS, CommandReply, PORT_NAME, TableRecord } from './const';
-
+import { ref, defineComponent, reactive, onMounted, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { BIconSearch, BIconDashCircleFill, BIconCaretRightSquare } from 'bootstrap-icons-vue';
+
+import { MSG, TASK_STATUS, CommandReply, PORT_NAME, TableRecord } from './const';
 import { ErrorCode, getErrorByCode } from '../type';
 import { SqlmapComponent } from './sqlmap';
 
@@ -166,20 +166,36 @@ export default  defineComponent({
             code: '',
             msg: '',
         });
-        const search = ref('');
+        const search = reactive({
+            text: '',
+            showBug: false,
+        });
         const isEnable = ref(false);
         const isConfig = ref(false);
         const loading = ref(false);
         const logVisable = ref(false);
         const detailVisable = ref(false);
-        const tableData = reactive({list: [] as TableRecord[]});
+        const tableData = reactive({list: [] as TableRecord[], source: [] as TableRecord[]});
         const logData = reactive({list: [] as LogData[]});
         const detailData = ref('');
         const multipleSelection = ref<TableRecord[]>([])
         const component = new SqlmapComponent();
 
+        // 过滤条件
+        watch(search, () => {
+            tableData.list = tableData.source.filter(
+                record => record.hostname?.includes(search.text)
+            ).filter(record => {
+                if (search.showBug) {
+                    return record.inject;
+                }
+                return true;
+            })
+        })
+
         // 处理 TASK_LIST_REPLY 返回数据
         const taskListReplyHandler = (data: TableRecord[]) => {
+            tableData.source = data;
             tableData.list = data;
             loading.value = false;
         };
@@ -193,10 +209,39 @@ export default  defineComponent({
 
         // 处理 TASK_LOG_REPLY 返回数据
         const taskDetailReplyHandler = (data: string) => {
-            detailData.value = data;
+            detailData.value = atob(data);
             detailVisable.value = true;
             loading.value = false;
         };
+
+        // 处理 TASK_DELETE_REPLY 返回数据
+        const taskDeleteReplyHandler = (data: boolean) => {
+            loading.value = false;
+            ElMessage({
+                message: data ? 'Task Delete Success' : 'Task Delete Fail.',
+                type: data ? 'success' : 'error',
+            });
+
+            // reload
+            data && reloadTable();
+        };
+
+        // 处理 TASK_START_REPLY 返回数据
+        const taskStartReplyHandler = (data: boolean) => {
+            loading.value = false;
+            ElMessage({
+                message: data ? 'Task Start Success' : 'Task Start Fail.',
+                type: data ? 'success' : 'error',
+            });
+
+            // reload
+            data && reloadTable();
+        };
+
+        const reloadTable = () => {
+            loading.value = true;
+            port.postMessage({command: MSG.TASK_LIST});
+        }
 
         // background 通信
         const msgHandler = (msg:CommandReply) => {
@@ -220,6 +265,12 @@ export default  defineComponent({
                 case MSG.TASK_DETAIL_REPLY:
                     taskDetailReplyHandler(msg.data);
                     break;
+                case MSG.TASK_DELETE_REPLY:
+                    taskDeleteReplyHandler(msg.data);
+                    break;
+                case MSG.TASK_START_REPLY:
+                    taskStartReplyHandler(msg.data);
+                    break;
                 default:
             }
         }
@@ -235,8 +286,7 @@ export default  defineComponent({
             // popup 受跨域限制，所有请求，放到 background 中执行
             port = chrome.runtime.connect({name: PORT_NAME});
             port.onMessage.addListener(msgHandler);
-            loading.value = true;
-            port.postMessage({command: MSG.TASK_LIST});
+            reloadTable();
         });
 
         // 处理table选中
@@ -247,14 +297,25 @@ export default  defineComponent({
         // 删除任务
         const handleDelete = (index:number, record:TableRecord) => {
             console.log(`[i]Delete index:${index} item!`);
-            loading.value = true;
-            port.postMessage({command: MSG.TASK_DELETE, taskId: record.taskId});
+            if (record.inject) {
+                ElMessageBox.confirm(
+                    `确定要删除 ${record.hostname} 吗？`, '删除'
+                )
+                .then(() => {
+                    loading.value = true;
+                    port.postMessage({command: MSG.TASK_DELETE, taskId: record.taskId});
+                });
+            } else {
+                loading.value = true;
+                port.postMessage({command: MSG.TASK_DELETE, taskId: record.taskId});
+            }
         }
 
         // 开始任务
-        const handleStart = (taskId: string) => {
-            console.log(`[i]Start taskId:${taskId} item!`);
-            console.log(taskId);
+        const handleStart = ( record:TableRecord) => {
+            console.log(`[i]Start taskId:${record.taskId} item!`);
+            loading.value = true;
+            port.postMessage({command: MSG.TASK_START, taskId: record.taskId});
         }
 
         // 日志
@@ -302,12 +363,25 @@ export default  defineComponent({
                 console.log(response);
             });
         }
+
+        /**
+         * 删除所有安全的链接
+         */
+        const deleteSafe = () => {
+            ElMessageBox.confirm(
+                '确定要删除所有不存在bug的链接吗？', '删除'
+            )
+            .then(() => {
+                loading.value = true;
+                port.postMessage({command: MSG.TASK_DELETE, taskIds: tableData.source.filter(record => !record.inject).map(item => item.taskId)});
+            });
+        }
         
         return {
             STATUS, isEnable, isConfig,
             tableData, logData, detailData, search, errorInfo,
             loading, detailVisable, logVisable, 
-            handleSelectionChange, handleDelete, handleLog, handleStart, handleDetail,
+            handleSelectionChange, handleDelete, handleLog, handleStart, handleDetail, deleteSafe, reloadTable,
             getStatusText, getTagTypeByStatus,
             tableRowClassName,
             toOptions,

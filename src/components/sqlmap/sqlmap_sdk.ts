@@ -393,8 +393,18 @@ export default class SqlmapSDK extends Singleton {
      * @get("/task/<taskid>/delete") Delete own task ID. 
      * @param taskId 
      */
-    public delTask(taskId: string) {
-
+    public async delTask(taskId: string):Promise<ApiResult> {
+        const api = `/task/${taskId}/delete`;
+        return Request.get(`${this.server}${api}`).then((res: any) => {
+            if (!res.success) {
+                throw (`delete task data:${taskId} options fail`);
+            }
+            console.log(`[i]delete task `, res);
+            return { success: true, data: true };
+        }).catch(err => {
+            console.error(`[e]delete task fail: %c${err}`, 'color: green');
+            return { success: false, code: ErrorCode.FETCH_FAIL };
+        })
     }
 
     /**
