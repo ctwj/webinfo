@@ -1,7 +1,5 @@
 import { BaseComponent } from "@/components/component";
-import { ComponnetConfig } from "@/components/config";
 import { Storeage } from "@/utils/storage";
-import { threadId } from "worker_threads";
 import { PARENT_MENU_ID } from "../type";
 
 enum ChangeStatus {
@@ -13,6 +11,9 @@ const ACTION_NEXT_PAGE = 'start-automatic-next-page';
 const MENU_ID = 'automatic-next-page-menu';
 const CLICK_DELAY = 3000;
 
+/**
+ * 自动翻页组件
+ */
 export class AutomaticPageComponent extends BaseComponent {
 
     // component public
@@ -36,6 +37,9 @@ export class AutomaticPageComponent extends BaseComponent {
         return `${this.name}-${type}`;
     }
 
+    /**
+     * background
+     */
     public background(): void {
         this.setStatusNow(this.status);
 
