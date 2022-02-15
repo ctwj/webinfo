@@ -25,7 +25,7 @@
                     :label-position="'left'"
                 >
                     <template v-for="config in component.configs" :key="config.name">
-                        <el-form-item :label="config.title">
+                        <el-form-item v-if="config.visable !== false" :label="config.title">
                             <el-input v-if="config.type === TYPES.INPUT" v-model="config.value" @blur="changeConfig(config.name, component)"></el-input>
                             <el-select v-if="config.type === TYPES.SELECT" v-model="config.value">
                                 <el-option

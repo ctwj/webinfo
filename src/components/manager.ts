@@ -2,6 +2,7 @@ import { BaseComponent } from "./component";
 
 import { SqlmapComponent } from './sqlmap/sqlmap';
 import { AutomaticPageComponent } from './automatic_page/automatic_page'; 
+import { ResponseModifyComponent } from './response_modify/response_modify'; 
 
 /**
  * 组件管理器
@@ -15,6 +16,7 @@ export class ComponentManager {
         // const automaticPage = new AutomaticPageComponent();
         this.Register(new SqlmapComponent());
         this.Register(new AutomaticPageComponent());
+        this.Register(new ResponseModifyComponent());
     }
 
     /**
@@ -36,7 +38,7 @@ export class ComponentManager {
             return;
         }
         this.componentList.push(component);
-        console.log(`register componet %c${component.name}: %c${component.desc}`, 'color: green', 'color: yellow');
+        console.log(`register componet %c${component.name}: %c${component.desc}`, 'color: green', 'color: red');
     }
 
     /**

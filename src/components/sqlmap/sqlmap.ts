@@ -75,7 +75,7 @@ export class SqlmapComponent extends BaseComponent {
 
         // 组件是否启动
         if (!await this.isEnable() || !await this.getConfig().get('sqlmapapi')) {
-            console.warn('需要开启sqlmap，并配置sqlmapapi');
+            console.log('需要开启sqlmap，并配置sqlmapapi');
             return;
         }
 

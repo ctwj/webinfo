@@ -11,10 +11,10 @@
             </el-col>
             <el-col :span="12">
                 <el-space style="float: right;">
-                    <el-button @click="deleteSafe">
+                    <el-button size="small" @click="deleteSafe">
                         <BIconDashCircleFill style="margin-right: 8px;vertical-align: middle;" />Remove Nobug
                     </el-button>
-                    <el-button @click="reloadTable">Refresh</el-button>
+                    <el-button size="small" @click="reloadTable">Refresh</el-button>
                 </el-space>
             </el-col>
         </el-row>

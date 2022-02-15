@@ -8,7 +8,6 @@
         "zip": "sh shell/zip.sh"
     },
     "dependencies": {
-        
         "bootstrap-icons-vue": "^0.8.0",
         "element-plus": "^1.0.2-beta.40",
         "md5": "^2.3.0",

@@ -7,3 +7,6 @@ body {
 .critical-text {
     color: #F56C6C;
 } */
+#webinfo-ctwj-wrapper #el-drawer__title {
+    margin-bottom:16px;
+}

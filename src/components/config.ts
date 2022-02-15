@@ -49,7 +49,7 @@ export class ComponnetConfig {
                 resolve('');
             }
             chrome.storage.local.get([key], (items) => {
-                if (items[key] === undefined) {
+                if (items[key] === undefined || items[key] === '') {
                     chrome.storage.local.set({[key]: item?.default});
                     resolve(item?.default);
 

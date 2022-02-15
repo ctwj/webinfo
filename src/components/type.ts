@@ -22,11 +22,12 @@ export enum ConfigType {
  * 组件配置项
  */
 export interface ConfigItem {
-    type: ConfigType;
+    type?: ConfigType;
     name: string;
     title: string;
     description: string;
-    default: boolean | string;
+    default: any;
+    visable?: boolean;
     options?: {label: string, value: string}[];
     value: any;
 }
