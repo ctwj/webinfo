@@ -2,6 +2,7 @@ import { BaseComponent } from "./component";
 
 import { SqlmapComponent } from './sqlmap/sqlmap';
 import { AutomaticPageComponent } from './automatic_page/automatic_page'; 
+import { XssComponent } from './xss/xss';
 
 /**
  * 组件管理器
@@ -15,6 +16,7 @@ export class ComponentManager {
         // const automaticPage = new AutomaticPageComponent();
         this.Register(new SqlmapComponent());
         this.Register(new AutomaticPageComponent());
+        this.Register(new XssComponent());
     }
 
     /**

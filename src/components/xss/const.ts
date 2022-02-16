@@ -19,3 +19,6 @@ export interface CommandReply {
     data?: any;
     errorCode?: string;
 }
+
+// xss 
+export const REMOVE_XSS_RULE_ID = 10001;

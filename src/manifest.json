@@ -27,8 +27,11 @@
     ],
     "options_page": "options/index.html",
     "permissions": [
-        "contextMenus",
+        "contextMenus", "webRequest", 
         "declarativeContent", "activeTab", "storage", "tabs",
-        "webRequest"
+        "declarativeNetRequest", "declarativeNetRequestWithHostAccess", "declarativeNetRequestFeedback"
+    ],
+    "host_permissions": [
+        "<all_urls>"
     ]
 }

