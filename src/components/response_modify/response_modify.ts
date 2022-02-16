@@ -1,8 +1,6 @@
 import { BaseComponent } from "@/components/component";
 import { ComponnetConfig } from "@/components/config";
 
-
-import { RequestHooker } from "./hook";
 import { ReplaceRules, HookerConfig } from './type';
 
 /**
@@ -64,11 +62,13 @@ export class ResponseModifyComponent extends BaseComponent {
         const config:HookerConfig = { isHooked: enable };
         const rules:ReplaceRules[] = await this.getConfig().get('rules');
         
-        window.console.log(config, rules);
-        const hooker = new RequestHooker(config , rules);
-        if (enable) {
-            hooker.hooker();
-        }
+
+        var file = chrome.runtime.getURL('inject.js')
+        var s = document.createElement('script')
+        s.type = 'text/javascript'
+        s.src = file
+        document.documentElement.appendChild(s)
+
     }
 
 

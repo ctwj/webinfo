@@ -30,5 +30,11 @@
         "contextMenus",
         "declarativeContent", "activeTab", "storage", "tabs",
         "webRequest"
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [ "inject.js" ],
+        "matches": [ "<all_urls>" ]
+      }
     ]
 }
