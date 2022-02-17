@@ -18,7 +18,10 @@ export default defineConfig({
     },
     plugins: [
         vue(),
-        chromeExtension(),
+        chromeExtension({
+            dynamicImportWrapper: false,
+            contentScriptWrapper: false
+        }),
         // probe({
         //     // options: {},
         //     // outputOption: {},

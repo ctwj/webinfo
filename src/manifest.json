@@ -26,15 +26,16 @@
         }
     ],
     "options_page": "options/index.html",
+    "devtools_page": "devtools/index.html",
     "permissions": [
         "contextMenus",
         "declarativeContent", "activeTab", "storage", "tabs",
         "webRequest"
     ],
     "web_accessible_resources": [
-      {
-        "resources": [ "inject.js" ],
-        "matches": [ "<all_urls>" ]
-      }
+        {
+            "resources": [ "inject.js" ],
+            "matches": [ "<all_urls>" ]
+        }
     ]
 }
