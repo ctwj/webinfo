@@ -137,7 +137,9 @@ table {
     width: 100vw;
 }
 #toolbar {
-    height: 24px;
+    height: 26px;
+    display: flex;
+    align-items: center;
 }
 #tool-panel {
     height: calc(100% - 24px);
@@ -149,4 +151,30 @@ table {
 }
 #tool-panel > .request-detail {
     flex: 1;
+}
+.border-color {
+    border-color: #CACDD1;
+}
+.title-bg-color {
+    background-color: #F1F3F4;
+}
+.icon-wrapper {
+    width: 16px;
+    height: 16px;
+    margin: 0 4px;
+    cursor: pointer;
+    overflow: hidden;
+}
+/* .icon-wrapper:hover {
+    color: #202124;
+} */
+.icon {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    left: -80px;
+}
+.img-disable {
+    color: #D5D5D6;
+    pointer-events: none;
 }

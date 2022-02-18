@@ -1,19 +1,10 @@
 <template>
     <div id="devtools-container">
-        <div id="toolbar"></div>
+        <Toolbar />
         <div id="tool-panel">
-            <div class="request-list">
-                <div class="request-head"></div>
-                <div class="request-list"></div>
-                <div class="rules-list"></div>
-                <div class="request-footer"></div>
-            </div>
-            <div class="rule-list">
-                <div class="rule-head"></div>
-                <div class="rules-list"></div>
-                <div class="rule-footer"></div>
-            </div>
-            <div class="request-detail"></div>
+            <RequestList />
+            <RuleList />
+            <RequestDetail />
         </div>
     </div>
 </template>
@@ -25,13 +16,19 @@
  */
 
 import { defineComponent, reactive, onMounted, ref } from "vue";
-
 import { ConfigItem, ConfigType } from "@/components/type";
 import { ResponseModifyComponent } from "@/components/response_modify/response_modify";
 
+import Toolbar from './component/toolbar.vue';
+import RequestList from './component/request_list.vue';
+import RuleList from './component/rule_list.vue';
+import RequestDetail from './component/request_detail.vue';
 
 export default defineComponent({
     name: "App",
+    components: {
+        Toolbar, RequestList, RuleList, RequestDetail,
+    },
     setup: () => {
         const modify = new ResponseModifyComponent();
         const enable = ref(false);
