@@ -25,7 +25,7 @@
             "css": ["content-scripts/main.css"]
         }
     ],
-    "options_page": "options/index.html",
+    "options_page": "devtools/index.html",
     "devtools_page": "devtools/index.html",
     "permissions": [
         "contextMenus",

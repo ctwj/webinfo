@@ -4,7 +4,8 @@ import App from './App.vue'
 
 // dev page 标记
 (window as any).__proto__.isDev = 1;
+(window as any).__proto__.isOptions = 1;
 
 createApp(App).mount('#app');
 
-ResponseModifyComponent.devtools();
+// ResponseModifyComponent.devtools();
