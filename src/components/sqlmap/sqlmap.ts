@@ -291,7 +291,7 @@ export class SqlmapComponent extends BaseComponent {
 
         // 监听 google 获取到的 url
         chrome.runtime.onMessage.addListener((message: SearchResultMessage, sender, sendResponse) => {
-            console.log(message);
+            // console.log(message);
             if (message?.type === 'sqlmap-search-urls') {
                 message.data.filter(url => !this.inBlackList(url)).forEach(url => {
                     console.log(`[i] add task url ${url}`);

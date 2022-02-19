@@ -1,16 +1,7 @@
 import { BaseComponent } from "@/components/component";
 import { ComponnetConfig } from "@/components/config";
 
-import { ReplaceRules, HookerConfig } from './type';
-
-
-interface BaseRequestData {
-    data: string[];
-    headers: [];
-    method: string;
-    path: string;
-    url: string;
-}
+import { ReplaceRules, HookerConfig, MSG, BaseRequestData } from './type';
 
 /**
  * 通知的数据结构
@@ -73,12 +64,14 @@ export class ResponseModifyComponent extends BaseComponent {
 
     private injectController(enable: boolean, rules: ReplaceRules[]) {
         // 写入 重写规则
-        window.postMessage({ type: 'setRules', from: 'content-script', to: 'inject', data: rules });
+        let event = new CustomEvent('ResponseModifyMessage', { detail: { type: 'setRules', from: 'content-script', to: 'inject', data: rules } });
+        window.dispatchEvent(event);
 
         // 开启 代理
         if (enable) {
             // window.postMessage({ type: 'disableProxy', from: 'content-script', to: 'inject', data: null });
-            window.postMessage({ type: 'enableProxy', from: 'content-script', to: 'inject', data: null });
+            let event = new CustomEvent('ResponseModifyMessage', { detail: { type: 'enableProxy', from: 'content-script', to: 'inject', data: null }});
+            window.dispatchEvent(event);
         }
     }
 
@@ -100,8 +93,12 @@ export class ResponseModifyComponent extends BaseComponent {
         document.documentElement.appendChild(s)
 
         // 监听 inject.js 的数据
-        window.addEventListener('message', (msg) => {
-            const message: NoticeData = msg.data;
+        window.addEventListener('ResponseModifyMessage', (msg) => {
+            // @ts-ignore
+            // window.console.log(msg.detail);
+
+            // @ts-ignore
+            const message: NoticeData = msg.detail;
             if (message.from !== 'inject' || message.to !== 'content-script') {
                 return;
             }
@@ -111,14 +108,19 @@ export class ResponseModifyComponent extends BaseComponent {
                     // window.console.log(message);
                     break;
                 case 'notice':
-                    window.console.log(message);
+                    window.console.log('notice');
+                    chrome.runtime.sendMessage(
+                        {
+                            command: MSG.NOTICE,
+                            data: message.data
+                        },
+                        (res) => {
+                            console.log('notice cb', res);
+                        }
+                    );
                     break;
             }
         });
-
-        window.addEventListener('ResponseModifyMessage', evt => {
-            window.console.log(evt);
-        })
 
     }
 

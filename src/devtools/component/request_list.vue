@@ -27,14 +27,32 @@
  */
 
 import { defineComponent, reactive, onMounted, ref } from "vue";
+import { BaseRequestData } from "@/components/response_modify/type";
 
 import ImgBtn from './img_btn.vue';
 import Empty from './empty.vue';
+
+interface RequestData {
+    api: string,            // 显示的接口地址
+    url: string,            // 实际请求地址
+    method: string,         // 请求方式
+    key: string,            // 根据url和参数生成的唯一key
+    data: BaseRequestData;
+}
+
+const DEFAULT_DATA = {
+    rules: [],
+    requests:[] as RequestData[]
+}
 
 export default defineComponent({
     name: "RequestList",
     components: {
         ImgBtn, Empty,
+    },
+    props: {
+        rules: [] as any[],
+        requests: [] as any[]
     },
     setup: () => {
         const show = reactive({
