@@ -116,6 +116,10 @@ export class ResponseModifyComponent extends BaseComponent {
             }
         });
 
+        window.addEventListener('ResponseModifyMessage', evt => {
+            window.console.log(evt);
+        })
+
     }
 
     // ============================== background =======================

@@ -1,9 +1,11 @@
 <template>
     <div id="devtools-container">
-        <Toolbar />
+        <Toolbar 
+            :switchOnValue="enable"
+            @switchClick="switchClick"
+            @removeClick="removeClick" />
         <div id="tool-panel">
             <RequestList />
-            <RuleList />
             <RequestDetail />
         </div>
     </div>
@@ -21,13 +23,12 @@ import { ResponseModifyComponent } from "@/components/response_modify/response_m
 
 import Toolbar from './component/toolbar.vue';
 import RequestList from './component/request_list.vue';
-import RuleList from './component/rule_list.vue';
 import RequestDetail from './component/request_detail.vue';
 
 export default defineComponent({
     name: "App",
     components: {
-        Toolbar, RequestList, RuleList, RequestDetail,
+        Toolbar, RequestList, RequestDetail,
     },
     setup: () => {
         const modify = new ResponseModifyComponent();
@@ -45,10 +46,20 @@ export default defineComponent({
             enable.value = await modify.isEnable();
         });
 
+        // 开关
+        const switchClick = () => {
+            enable.value = !enable.value;
+            
+        }
 
+        // 清除request
+        const removeClick = () => {
+            window.console.log('remove');
+        }
 
         return {
-            enable
+            enable,
+            removeClick, switchClick
         }
     }
     

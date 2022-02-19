@@ -5,10 +5,10 @@
         @mouseleave="mouseLeave">
         <img v-if="type === 'circle'" class="icon" src="@/devtools/img/circle.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
         <img v-if="type === 'remove'" class="icon" src="@/devtools/img/slash.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
-        <img v-if="type === 'arrowLeft'" class="icon" src="@/devtools/img/arrow-left.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
+        <img v-if="type === 'arrowDown'" class="icon" src="@/devtools/img/arrow-left.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
         <img v-if="type === 'arrowRight'" class="icon" src="@/devtools/img/arrow-right.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
-        <img v-if="type === 'arrowDown'" class="icon" src="@/devtools/img/arrow-down.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
-        <img v-if="type === 'arrowUp'" class="icon" src="@/devtools/img/arrow-up.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
+        <img v-if="type === 'arrowDownFill'" class="icon" src="@/devtools/img/arrow-down.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
+        <img v-if="type === 'arrowUpFill'" class="icon" src="@/devtools/img/arrow-up.svg" :style="`filter: drop-shadow(${imgColor} 80px 0);`"/>
     </div>
     
 </template>
