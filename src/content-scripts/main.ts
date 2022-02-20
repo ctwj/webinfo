@@ -9,7 +9,7 @@ import { exit } from "process";
 
 (() => {
     //  options 页面， 不执行 content-script
-    if ((window as any).isOptions) {
+    if ((window as any).isOptions || (window as any).isDev) {
         return;
     }
 

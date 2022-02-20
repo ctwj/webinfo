@@ -19,6 +19,7 @@
  * 配置页面
  */
 
+import { json } from "stream/consumers";
 import { defineComponent, reactive, onMounted, onUnmounted, ref } from "vue";
 import { ConfigItem, ConfigType } from "@/components/type";
 import { removeListener } from "process";
@@ -44,6 +45,12 @@ export default defineComponent({
         Toolbar, RequestList, RequestDetail,
     },
     setup: () => {
+        const logger = (info: string, type: string = 'log') => {
+            let str = `[devtools] ${info}`;
+            chrome.devtools.inspectedWindow.eval(
+                `console.log(unescape("${escape(str)}"))`);
+        }
+
         const modify = new ResponseModifyComponent();
         const enable = ref(false);
         const data = reactive({
@@ -57,52 +64,66 @@ export default defineComponent({
             rule: null,           // 当前选中规则
         })
 
+        // 连接到 background ， 不能直接和 content-script 通信, 通过 background 中专
+        const backgroundPageConnection = chrome.runtime.connect({
+            name: "devtools-page"
+        });
+
+
         // 从 BaseRequestData 中获取实际请求地址
         const getUrl = (data:BaseRequestData):string => {
-            return '';
+            const url = data.url.match(/(https?:\/\/.*?)\/.*?/g) + data.path;
+            return UrlInfo.get_url_without_params(url);
         }
-        const messageCallback = (request:any, sender:any, sendResponse:any) => {
+        const messageCallback = (message:any) => {
                 // 检测消息来源
-                window.console.log('request',request);
-                sendResponse({ result: true})
+                logger('message from background');
+                logger(JSON.stringify(message));
 
-                if (!request.command || request.command === 'notice') {
+                if (!message.command || message.command === 'notice') {
                     return;
                 } 
 
                 // request.data 为请求数据
                 try {
-                    const url = getUrl(request.data);
-                    const api = request.url;
+                    const url = getUrl(message.data);
+                    const api = message.url;
                     const key = (new UrlInfo(url)).get_url_hash();
-                    const method = request.data.method;
+                    const method = message.data.method;
 
                     if (!data.requests.find(item => item.key === key && item.method === method)) {
                         data.requests.push({
                             url, key, method, api,
-                            data: request.data
+                            data: message.data
                         })
                     }
 
-                    window.console.log(data.requests);
+                    logger(JSON.stringify(data.requests));
 
                 } catch (e) {
-                    //
-                    window.console.log(e);
+                    logger('devtools');
+                    logger(JSON.stringify(e));
                 }
         };
 
 
         onMounted(async () => {
-            console.log('onMounted');
+            logger('onMounted in devtools');
             enable.value = await modify.isEnable();
+
+            backgroundPageConnection.postMessage({
+                name: 'devtools-init',
+                tabId: chrome.devtools.inspectedWindow.tabId
+            });
             
             // 开始接口 content-script 发送过来的notice
-            chrome.runtime.onMessage.addListener(messageCallback);
+             backgroundPageConnection.onMessage.addListener(
+                 messageCallback
+             );
         });
 
         onUnmounted( () => {
-            chrome.runtime.onMessage.removeListener(messageCallback);
+            // chrome.runtime.onMessage.removeListener(messageCallback);
         })
 
         // 开关
@@ -113,7 +134,7 @@ export default defineComponent({
 
         // 清除request
         const removeClick = () => {
-            window.console.log('remove');
+            logger('removeClick in devtools');
         }
 
         return {

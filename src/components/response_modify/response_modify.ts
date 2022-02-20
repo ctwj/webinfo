@@ -1,5 +1,6 @@
 import { BaseComponent } from "@/components/component";
 import { ComponnetConfig } from "@/components/config";
+import { Command } from "./type";
 
 import { ReplaceRules, HookerConfig, MSG, BaseRequestData } from './type';
 
@@ -51,14 +52,6 @@ export class ResponseModifyComponent extends BaseComponent {
         super();
     }
 
-    // ============================== background =======================
-
-    /**
-     * background
-     */
-    public background(): void {
-    }
-
     // ============================== content script =======================
 
 
@@ -74,8 +67,6 @@ export class ResponseModifyComponent extends BaseComponent {
             window.dispatchEvent(event);
         }
     }
-
-
 
     /**
      * 注入在 content-script 中代码
@@ -97,6 +88,8 @@ export class ResponseModifyComponent extends BaseComponent {
             // @ts-ignore
             // window.console.log(msg.detail);
 
+            
+
             // @ts-ignore
             const message: NoticeData = msg.detail;
             if (message.from !== 'inject' || message.to !== 'content-script') {
@@ -108,14 +101,20 @@ export class ResponseModifyComponent extends BaseComponent {
                     // window.console.log(message);
                     break;
                 case 'notice':
-                    window.console.log('notice');
+                    
+                    this.logger('get notice message from inject.js', 'content-script');
+                    console.log(message);
+
+                    // 发送到 background 
+                    this.logger('try send it to background', 'content-script');
                     chrome.runtime.sendMessage(
                         {
                             command: MSG.NOTICE,
                             data: message.data
                         },
                         (res) => {
-                            console.log('notice cb', res);
+                            this.logger('get background callback reuslt:', 'content-script');
+                            console.log(res);
                         }
                     );
                     break;
@@ -127,10 +126,89 @@ export class ResponseModifyComponent extends BaseComponent {
     // ============================== background =======================
 
     /**
-     * devtools 中执行
+     * background
+     * 1. 监听 content-scirpt 过来的请求，【notice】，并转发到 background
+     * 2. 监听 background 过来的请求
+     */
+    public background(): void {
+        var connections = {};
+        let that = this;
+
+        chrome.runtime.onConnect.addListener( (port) => {
+            
+            let extensionListener = (message: any) => {
+                this.logger(`get message from port ${JSON.stringify(message)}`);
+
+                // The original connection event doesn't include the tab ID of the
+                // DevTools page, so we need to send it explicitly.
+                if (message.name == "devtools-init") {
+                    if (!message.tabId) {
+                        that.logger('get a null tabId');
+                        return;
+                    }
+                    // @ts-ignore
+                    connections[message.tabId] = port;
+                    return;
+                }
+
+                // other message handling
+            }
+
+            // @ts-ignore Listen to messages sent from the DevTools page
+            port.onMessage.addListener(extensionListener);
+
+            port.onDisconnect.addListener(function (port) {
+                // @ts-ignore
+                port.onMessage.removeListener(extensionListener);
+
+                var tabs = Object.keys(connections);
+                for (var i = 0, len = tabs.length; i < len; i++) {
+                    // @ts-ignore
+                    if (connections[tabs[i]] == port) {
+                        // @ts-ignore
+                        delete connections[tabs[i]]
+                        break;
+                    }
+                }
+            });
+        });
+
+        // Receive message from content script and relay to the devTools page for the
+        // current tab
+        // 监听 打开options页面
+        chrome.runtime.onMessage.addListener((message: Command, sender, sendResponse) => {
+            // Messages from content scripts should have sender.tab set
+
+            
+            this.logger('get message from content-script');
+            console.log(message);
+            if (sender.tab) {
+                var tabId = sender.tab.id;
+                // @ts-ignore
+                if (tabId in connections) {
+                    // @ts-ignore
+                    connections[tabId].postMessage(message);
+                } else {
+                    this.logger('Tab not found in connection list.');
+                }
+            } else {
+                this.logger('sender.tab not defined.');
+            }
+            return true;
+        });
+    }
+
+    // ============================== devtools =======================
+
+    /**
+     * devtools 
+     * 1. 创建 dev panel
+     * 2. 监听， background 过来的 api 请求， 并显示在列表中
+     * 3. 通知 background 页面， devtools 页面已经打开
      */
     public static devtools() {
 
+        this.logger('crate panel', 'devtools')
         // 创建pannel
         chrome.devtools.panels.create("ResponseModify",
             "MyPanelIcon.png",
@@ -139,17 +217,6 @@ export class ResponseModifyComponent extends BaseComponent {
                 // code invoked on panel creation
             }
         );
-
-        const logger = (info: string, type: string = 'log') => {
-            chrome.devtools.inspectedWindow.eval(
-                `console.log(unescape("${escape(info)}"))`);
-        }
-
-        // chrome.devtools.network.onRequestFinished.addListener(
-        //     function (request) {
-        //         logger(request.request.url)
-        //     }
-        // );
     }
 
 

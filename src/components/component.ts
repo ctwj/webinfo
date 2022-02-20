@@ -1,6 +1,8 @@
 import { ComponnetConfig } from './config';
 import { ConfigType, ExtensionComponent } from './type';
 
+import dayjs from 'dayjs';
+
 /**
  * BaseComponent
  * background 和 content-script 分别有一个实例对象
@@ -63,5 +65,59 @@ export class BaseComponent implements ExtensionComponent {
     
     public getConfig():ComponnetConfig {
         return this.config;
+    }
+
+    /**
+     * Logger
+     * @param info 
+     * @param position 
+     * @param type 
+     */
+    public logger(info:string | Object, position: string='background', type="info") {
+        let str = '';
+        if (typeof info === 'string') {
+            str = info;
+        } else {
+            str = JSON.stringify(info);
+        }
+        const positionMap:{[key:string]:string} = {
+            'background': 'color:red',
+            'devtools': 'color:grey',
+            'content-script': 'color:black',
+        }
+        const typeMap: { [key: string]: string } = {
+            'info': 'color:black',
+            'error': 'color:red',
+            'warning': 'color:yellow',
+        }
+        console.log(
+            `%c[${position.substring(0, 1).toUpperCase()}][${this.name}] %c[${dayjs().format('HH:mm:ss')}] %c${info}`,
+            positionMap[position], 'color:#14161A',
+            typeMap[type]
+        );
+    }
+
+    /**
+     * Logger
+     * @param info 
+     * @param position 
+     * @param type 
+     */
+    public static logger(info: string, position: string = 'B', type = "info") {
+        const positionMap: { [key: string]: string } = {
+            'background': 'color:red',
+            'devtools': 'color:grey',
+            'content-script': 'color:black',
+        }
+        const typeMap: { [key: string]: string } = {
+            'info': 'color:black;font-size:600;',
+            'error': 'color:red',
+            'warning': 'color:yellow',
+        }
+        console.log(
+            `%c[${position.substring(0,1).toUpperCase()}][${this.name}] %c[${dayjs().format('HH:mm:ss')}] %c${info}`,
+            positionMap[position], 'color:#14161A',
+            typeMap[type]
+        );
     }
 }

@@ -18,15 +18,25 @@ export class UrlInfo {
     }
 
     /**
-     * 计算urlhash, 去除参数值
+     * 获取没参数的url
+     * @param url 
+     * @returns 
      */
-    get_url_hash() {
-        let u = new URL(this.url);
+    public static get_url_without_params (url:string) {
+        let u = new URL(url);
         u.hash = '';
         u.searchParams.sort();
         // @ts-ignore
         [...u.searchParams].map(item => item[0]).map(k => u.searchParams.set(k, ''));
-        return md5(u.href);
+        return u.href;
+    }
+
+    /**
+     * 计算urlhash, 去除参数值
+     */
+    get_url_hash() {
+        let u = UrlInfo.get_url_without_params(this.url);
+        return md5(u);
     }
 
     get_hash() {

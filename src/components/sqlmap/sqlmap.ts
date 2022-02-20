@@ -294,7 +294,7 @@ export class SqlmapComponent extends BaseComponent {
             // console.log(message);
             if (message?.type === 'sqlmap-search-urls') {
                 message.data.filter(url => !this.inBlackList(url)).forEach(url => {
-                    console.log(`[i] add task url ${url}`);
+                    this.logger(`[i] add task url ${url}`);
                     this.task.add({ url });
                 })
                 sendResponse('ok');
@@ -305,7 +305,7 @@ export class SqlmapComponent extends BaseComponent {
         // 监听 connect 命令
         chrome.runtime.onConnect.addListener( port => {
             port.onMessage.addListener( msg => {
-                console.log(`[i]get message from port ${JSON.stringify(msg)}`);
+                this.logger(`get message from port ${JSON.stringify(msg)}`);
                 switch( msg.command) {
                     case MSG.TASK_LIST:
                         this.taskListMsgHandler(msg, port);

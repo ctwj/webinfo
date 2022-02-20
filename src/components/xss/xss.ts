@@ -348,7 +348,7 @@ export class AutomaticPageComponent extends BaseComponent {
             let url_info = new UrlInfo(url);
             let frame = document.createElement('iframe');
             let id = url_info.get_hash();
-            let info = JSON.stringify({ url: source_url, param: k, payload: escape(payload), component: this.ns });
+            let info = JSON.stringify({ url: source_url, param: k, payload: escape(payload), component: this.name });
 
             frame.setAttribute('id', id)
             frame.setAttribute('data-url', url)

@@ -51,8 +51,8 @@ export default defineComponent({
         ImgBtn, Empty,
     },
     props: {
-        rules: [] as any[],
-        requests: [] as any[]
+        rules: Array,
+        requests: Array
     },
     setup: () => {
         const show = reactive({

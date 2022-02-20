@@ -71,7 +71,6 @@ export class ComponentManager {
             // }
             component.background();
         })
-        console.log(`[i]backgournd register finished!`);
     }
 
 }

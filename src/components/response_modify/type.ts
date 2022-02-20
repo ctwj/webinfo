@@ -1,4 +1,8 @@
-
+// 命令
+export interface Command {
+    command: MSG;
+    args: { [key: string]: any };
+}
 
 export interface HookerConfig {
     isHooked: boolean;
@@ -14,6 +18,10 @@ export interface ReplaceRules {
 // 消息名字
 export enum MSG {
     NOTICE = 'notice',
+    MATCHED = 'matched',
+    ADD_RULE = 'addRule',
+    REMOVE_RULE = 'removeRule',
+    EDIT_RULE = 'editRule',
 }
 
 export interface BaseRequestData {

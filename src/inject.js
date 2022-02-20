@@ -1,4 +1,12 @@
 {
+/**
+ * inject.js 
+ * 1. 改写 xhr， 拦截 api， 将 api请求数据发送到 content-script 【window.dispatch(customevent)】
+ * 2. 接受 content-script 过来的命令， 开启或关闭 xhr改写，
+ * 3. 接受 content-script 过来的命令， 设置改写规则
+ */
+
+
 // https://github.com/LazyDuke/ajax-proxy/blob/master/src/index.ts
 class AjaxProxy{constructor(){this.proxyAjax=t=>{if(null==t)throw new TypeError("proxyMap can not be undefined or null");this.RealXMLHttpRequest=this.RealXMLHttpRequest||window.XMLHttpRequest,this.realXMLHttpRequest=this.realXMLHttpRequest||new window.XMLHttpRequest;const e=this,r=new Proxy(this.RealXMLHttpRequest,{construct(r){const n=new r;return new Proxy(n,{get(r,n,o){let s="";try{s=typeof e.realXMLHttpRequest[n]}catch(t){return console.error(t),r[n]}if("function"!==s){const s=e.hasOwnProperty(`_${n.toString()}`)?e[`_${n.toString()}`]:r[n],i=(t[n]||{}).getter;return"function"==typeof i&&i.call(r,s,o)||s}return(...e)=>{let s=e;if(t[n]){const i=t[n].call(r,e,o);if(!0===i)return;i&&(s="function"==typeof i?i.call(r,...e):i)}return r[n].call(r,...s)}},set(r,n,o,s){let i="";try{i=typeof e.realXMLHttpRequest[n]}catch(t){console.error(t)}if("function"===i)throw new Error(`${n.toString()} in XMLHttpRequest can not be reseted`);if("function"==typeof t[n])r[n]=()=>{t[n].call(r,s)||o.call(s)};else{const i=(t[n]||{}).setter;try{r[n]="function"==typeof i&&i.call(r,o,s)||("function"==typeof o?o.bind(s):o)}catch(t){if(!0!==i)throw t;e[`_${n.toString()}`]=o}}return!0}})}});return window.XMLHttpRequest=r,this.RealXMLHttpRequest},this.unProxyAjax=()=>{this.RealXMLHttpRequest&&(window.XMLHttpRequest=this.RealXMLHttpRequest),this.RealXMLHttpRequest=void 0}}}
 
@@ -39,16 +47,19 @@ class customInfo {
       },
       onreadystatechange: function (xhr) {
         if (xhr.readyState === 4) {
-          console.log(xhr.customInfo);
+          // console.log(xhr.customInfo);
           // console.log(xhr.responseText);
         }
       },
       responseText: {
         getter: function (val) {
           if (!this.notice) {
+
+            // 发送消息到 content-script
             const message = { type: 'notice', data: this.customInfo, from: 'inject', to: 'content-script' };
             const event = new CustomEvent('ResponseModifyMessage', {detail:message});
             window.dispatchEvent(event);
+            window.console.log('[inject] try send message to content-script', message);
             this.notice = true;
           }
     
@@ -81,7 +92,9 @@ window.webinfoSetRules = (rules) => {
   webinfoAjaxProxy.rules = rules;
 }
 
+  // 监听 content-script 过来的 命令
   window.addEventListener('ResponseModifyMessage', msg => {
+    console.log('[inject] get message from content-script')
   const message = msg.detail;
   if (!message.type) {
     return;
@@ -89,6 +102,7 @@ window.webinfoSetRules = (rules) => {
   if (message.from !== 'content-script' || message.to !== 'inject') {
     return;
   }
+    console.log('[inject] get command from content-script', message.type);
   switch (message.type) {
     case 'setRules':
       // window.console.log('setrules', message.data);
@@ -109,5 +123,5 @@ window.webinfoSetRules = (rules) => {
 const message = { type: 'injectReady', data: null, from: 'inject', to: 'content-script' };
 const event = new CustomEvent('ResponseModifyMessage', { detail: message });
 window.dispatchEvent(event);
-
+console.log('[inject] send injectReady to content-script');
 }
