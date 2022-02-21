@@ -13,6 +13,10 @@
         </header>
         <div v-if="show.request" class="request-list container">
             <Empty v-if="show.requestList.length == 0"/>
+            <div v-else v-for="request in reqeustList" :key="request.key"
+                class="request-item">
+                <span :title="request.url">{{ request.api }}</span>
+            </div>
         </div>
         <!-- <footer class="request-footer footer">
             Total: 10 Request

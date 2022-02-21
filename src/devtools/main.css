@@ -134,6 +134,72 @@ table {
     height: 100vh;
     width: 100vw;
 }
+
+/* Scrollbar size */
+.scroll ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scroll ::-webkit-scrollbar-thumb {
+  background-color: rgba(127, 127, 127, 0.6);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 5px;
+}
+
+.scroll ::-webkit-scrollbar-thumb:vertical:hover,
+.scroll ::-webkit-scrollbar-thumb:horizontal:hover {
+  background-color: rgb(110, 110, 110);
+}
+
+.scroll ::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.scroll ::-webkit-scrollbar-thumb:vertical:active,
+.scroll ::-webkit-scrollbar-thumb:horizontal:active {
+  background: rgba(95, 91, 91, 1);
+}
+
+.scroll ::-webkit-scrollbar-corner {
+  background: none;
+}
+
+/**
+ *      ========================== Public ==========================
+ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #1e2128;
+        --border: #35373e;
+        --text: #f1f1f1;
+        --text-2: #c5c6ca;
+        --text-3: #a5a5ae;
+        --select: #17191e;
+        --accent: #6068d2;
+        --accent-hover: #484fac;
+        --shortcut: #383e4a;
+        --placeholder: #63687b;
+        --background-2: #292d36;
+    }
+}
+@media (prefers-color-scheme: light) {
+    :root {
+        --background: #fafcff;
+        --border: #f2f3fb;
+        --text: #2b2d41;
+        --text-2: #2b2d41;
+        --text-3: #929db2;
+        --select: #eff3f9;
+        --accent: #6068d2;
+        --accent-hover: #484fac;
+        --shortcut: #dadeea;
+        --placeholder: #bac2d1;
+        --background-2: #292d36;
+    }
+}
+
 #devtools-container {
     height: 100vh;
     width: 100vw;
@@ -141,7 +207,11 @@ table {
 
 .text {
     font-size: 10px;
-    color: #14161A;
+    color: var(--text);
+}
+.secondary-text {
+    font-size: 10px;
+    color: var(--text-2);
 }
 
 .flex-column {
@@ -152,24 +222,34 @@ table {
     justify-content: center;
     align-items: center;
 }
-
 .border {
-    border:solid 1px #CACDD1;
+    border:solid 1px var(--border);
 }
 .empty-wrapper {
     height: 100%;
     width: 100%;
 }
-
 .empty-icon {
     height: 48px;
     width: 48px;
     position: relative;
     margin-bottom: 8px;
 }
+.pl-2 {
+    padding-left: 8px;
+}
+.pl-4 {
+    padding-left: 16px;
+}
+.pr-2 {
+    padding-right: 8px;
+}
+.pr-4 {
+    padding-right: 16px;
+}
 
 /**
- *    ToolBar
+ *     ========================== ToolBar ==========================
  */
 #toolbar {
     height: 26px;
@@ -191,7 +271,7 @@ table {
     flex: 1;
 }
 .title-bg-color {
-    background-color: #F1F3F4;
+    background-color: var(--background);
 }
 .icon-wrapper {
     width: 16px;
@@ -210,7 +290,6 @@ table {
     left: -80px;
 }
 .img-disable {
-    color: #D5D5D6;
     pointer-events: none;
 }
 
@@ -220,7 +299,7 @@ table {
     flex-grow: 0;
     flex-shrink: 0;
     flex: 0;
-    background-color: #F1F3F4;
+    background-color: var(--background-2);
     line-height: 26px;
     padding: 0 8px;
 }
@@ -230,7 +309,7 @@ table {
     justify-content: space-between;
 }
 .header:hover {
-    background-color: #CACDD1;
+    background-color: var(--background-2);
 }
 .container {
     flex-grow: 1;
@@ -239,7 +318,7 @@ table {
 }
 
 /**
- * Request List
+ * ========================== Reqeist list ==========================
  */ 
 .request-list-wrapper {
     width: 220px;
@@ -251,4 +330,11 @@ table {
 }
 .request-list {
     flex: 2;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.request-item {
+    background-color: var(--background-2);
+    border: 1px solid var(--border);
+    height: 20px;
 }

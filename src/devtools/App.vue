@@ -80,7 +80,7 @@ export default defineComponent({
                 logger('message from background');
                 logger(JSON.stringify(message));
 
-                if (!message.command || message.command === 'notice') {
+                if (!message.command || message.command !== 'notice') {
                     return;
                 } 
 
@@ -123,7 +123,7 @@ export default defineComponent({
         });
 
         onUnmounted( () => {
-            // chrome.runtime.onMessage.removeListener(messageCallback);
+            chrome.runtime.onMessage.removeListener(messageCallback);
         })
 
         // 开关
