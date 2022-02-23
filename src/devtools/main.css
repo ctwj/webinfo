@@ -105,7 +105,7 @@ section {
 body {
     line-height: 1;
     font-size: 10px;
-    color: #14161A;
+    color: var(--text);
 }
 
 ol,
@@ -171,7 +171,7 @@ table {
  */
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #1e2128;
+        --background: #292A2D;
         --border: #35373e;
         --text: #f1f1f1;
         --text-2: #c5c6ca;
@@ -181,7 +181,9 @@ table {
         --accent-hover: #484fac;
         --shortcut: #383e4a;
         --placeholder: #63687b;
-        --background-2: #292d36;
+        --background-2: #202124;
+        --background-odd: #242424;
+        --background-even: #292929;
     }
 }
 @media (prefers-color-scheme: light) {
@@ -280,9 +282,6 @@ table {
     cursor: pointer;
     overflow: hidden;
 }
-/* .icon-wrapper:hover {
-    color: #202124;
-} */
 .icon {
     width: 16px;
     height: 16px;
@@ -314,6 +313,8 @@ table {
 .container {
     flex-grow: 1;
     flex-shrink: 1;
+}
+.container-padding {
     padding: 4px 8px;
 }
 
@@ -334,7 +335,11 @@ table {
     overflow-y: auto;
 }
 .request-item {
-    background-color: var(--background-2);
-    border: 1px solid var(--border);
     height: 20px;
+}
+.odd {
+    background-color: var(--background-odd);
+}
+.even {
+    background-color: var(--background-even);
 }

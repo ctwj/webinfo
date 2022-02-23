@@ -99,6 +99,7 @@ export default defineComponent({
                     }
 
                     logger(JSON.stringify(data.requests));
+                    logger(data.requests.length.toString());
 
                 } catch (e) {
                     logger('devtools');
