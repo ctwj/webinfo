@@ -184,6 +184,7 @@ table {
         --background-2: #202124;
         --background-odd: #242424;
         --background-even: #292929;
+        --background-hover: #172437;
     }
 }
 @media (prefers-color-scheme: light) {
@@ -199,6 +200,9 @@ table {
         --shortcut: #dadeea;
         --placeholder: #bac2d1;
         --background-2: #292d36;
+        --background-odd: #FFFFFF;
+        --background-even: #F5F5F5;
+        --background-hover: #F1F6FD;
     }
 }
 
@@ -313,6 +317,7 @@ table {
 .container {
     flex-grow: 1;
     flex-shrink: 1;
+    background-color: var(--background);
 }
 .container-padding {
     padding: 4px 8px;
@@ -335,7 +340,18 @@ table {
     overflow-y: auto;
 }
 .request-item {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
     height: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+    word-wrap: nowrap;
+    cursor: pointer;
+}
+.request-item:hover {
+    background-color: var(--background-hover);
 }
 .odd {
     background-color: var(--background-odd);

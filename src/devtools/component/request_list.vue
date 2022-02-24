@@ -12,13 +12,13 @@
             <ImgBtn :type="show.request ? 'arrowDown' : 'arrowRight'" />
         </header>
         <div v-if="show.request" class="request-list container border">
-            <Empty v-if="show.requestList.length == 0"/>
+            <Empty v-if="requestList.length === 0"/>
             <div v-else 
-                v-for="(request,index) in show.requestList" 
+                v-for="(request,index) in requestList" 
                 :key="request.key"
                 :class="[`${index % 2 ? 'odd' : 'even'}`]"
                 class="request-item">
-                <span :title="request.url">{{ request.url }}</span>
+                <span style="display:inline-block;overflow:hidden;text-overflow:ellipsis;" :title="request.url">{{ request.url }}</span>
             </div>
         </div>
         <!-- <footer class="request-footer footer">
@@ -33,7 +33,7 @@
  * 请求列表
  */
 
-import { defineComponent, reactive, onMounted, ref } from "vue";
+import { defineComponent, reactive, onMounted, ref, watch } from "vue";
 import { BaseRequestData } from "@/components/response_modify/type";
 
 import ImgBtn from './img_btn.vue';
@@ -47,29 +47,31 @@ interface RequestData {
     data: BaseRequestData;
 }
 
-const DEFAULT_DATA = {
-    rules: [],
-    requests:[] as RequestData[]
-}
-
 export default defineComponent({
     name: "RequestList",
     components: {
         ImgBtn, Empty,
     },
     props: {
-        rules: Array,
-        requests:Array
+        rules: {
+            type: Array
+        },
+        requestList: {
+            type: Array,
+            default: () => ([])
+        },
     },
     setup: (props) => {
+        watch([()=>props.requestList], (val) => {
+            window.console.log(val);
+        } )
         const show = reactive<{
-            rule: boolean, request: boolean, ruleList: any[], requestList: Array<RequestData>
+            rule: boolean, request: boolean, ruleList: any[]
         }>({
             rule: true,
             request: true,
             ruleList: [],
-            requestList: (props.requests ?? []) as RequestData[],
-        })
+        });
 
         return {
             show

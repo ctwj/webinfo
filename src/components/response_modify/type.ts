@@ -25,8 +25,8 @@ export enum MSG {
 }
 
 export interface BaseRequestData {
-    data: string[];
-    headers: [];
+    data: any[];
+    headers: Array<any>;
     method: string;
     path: string;
     url: string;

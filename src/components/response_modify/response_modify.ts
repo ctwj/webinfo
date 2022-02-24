@@ -207,9 +207,11 @@ export class ResponseModifyComponent extends BaseComponent {
      * 3. 通知 background 页面， devtools 页面已经打开
      */
     public static devtools() {
-
-        this.logger('crate panel', 'devtools')
         // 创建pannel
+        if (!chrome.devtools) {
+            return;
+        }
+        this.logger('crate panel', 'devtools')
         chrome.devtools.panels.create("ResponseModify",
             "MyPanelIcon.png",
             "devtools/index.html",
